@@ -1,0 +1,41 @@
+Business-PayPal-API version 0.01
+================================
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   WPP_TEST=auth.txt make test
+   make install
+
+Please notice that this module requires you have several things before
+you can test it:
+
+  - a sandbox personal PayPal account
+  - a sandbox business PayPal account
+  - API credentials (either a certificate or signature)
+
+Acquiring these things is your job, not mine. Read PayPal's
+documentation to learn more.
+
+If you do not set the WPP_TEST environment variable, sandbox tests
+will be skipped.
+
+The format of the authentication tokens file defined by WPP_TEST may
+be found in the Business::PayPal::API documentation under "TESTING".
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+  SOAP::Lite 0.67 or later.
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2006 by Scott Wiersdorf
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.6 or,
+at your option, any later version of Perl 5 you may have available.
