@@ -1,4 +1,23 @@
 Revision history for Perl extension Business::PayPal::API.
 
-0.01  - this module is the new base for Business::PayPal::WPP::ExpressCheckout, 
-        which is now deprecated.
+----------------------------
+revision 1.4
+date: 2006/03/21 22:15:11;  author: scott;  state: Exp;  lines: +2 -2
+- bump version
+----------------------------
+revision 1.3
+date: 2006/03/21 22:05:19;  author: scott;  state: Exp;  lines: +55 -31
+- minor debugging changes
+- documentation update for developers
+- note about using IO::Socket::SSL (don't)
+----------------------------
+revision 1.2
+date: 2006/03/16 23:33:49;  author: scott;  state: Exp;  lines: +184 -26
+- initial checkin of API and subclasses
+- all tests working, documentation done
+----------------------------
+revision 1.1
+date: 2006/03/15 23:33:53;  author: scott;  state: Exp;
+- moved from Business::PayPal::WPP::ExpressCheckout
+- uses API.pm for authorization/authentication and other common functions
+=============================================================================

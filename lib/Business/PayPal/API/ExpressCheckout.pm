@@ -4,13 +4,13 @@ use 5.008001;
 use strict;
 use warnings;
 
-use SOAP::Lite 0.67;
+use SOAP::Lite 0.67; # +trace => 'all';
 use Business::PayPal::API ();
 use Carp 'carp';
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.10';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.2 2006/03/16 23:33:49 scott Exp $';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.3 2006/03/21 22:05:19 scott Exp $';
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
 ## allow you to bill twice with it.

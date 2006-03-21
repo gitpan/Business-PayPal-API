@@ -4,11 +4,11 @@ use 5.008001;
 use strict;
 use warnings;
 
-use SOAP::Lite 0.67;
+use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.01';
-our $CVS_VERSION = '$Id: API.pm,v 1.2 2006/03/16 23:33:49 scott Exp $';
+our $VERSION = '0.02';
+our $CVS_VERSION = '$Id: API.pm,v 1.4 2006/03/21 22:15:11 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -104,29 +104,29 @@ sub doCall {
 
     my $som;
     {
-	no warnings 'redefine';
-	local *SOAP::Deserializer::typecast = sub {shift; return shift};
-	$ENV{HTTPS_PKCS12_FILE}     || (local $ENV{HTTPS_PKCS12_FILE}     = $H_PKCS12File{$self});
-	$ENV{HTTPS_PKCS12_PASSWORD} || (local $ENV{HTTPS_PKCS12_PASSWORD} = $H_PKCS12Password{$self});
-	$ENV{HTTPS_CERT_FILE}       || (local $ENV{HTTPS_CERT_FILE}       = $H_CertFile{$self});
-	$ENV{HTTPS_KEY_FILE}        || (local $ENV{HTTPS_KEY_FILE}        = $H_KeyFile{$self});
+        $H_PKCS12File{$self}     and local $ENV{HTTPS_PKCS12_FILE}     = $H_PKCS12File{$self};
+        $H_PKCS12Password{$self} and local $ENV{HTTPS_PKCS12_PASSWORD} = $H_PKCS12Password{$self};
+        $H_CertFile{$self}       and local $ENV{HTTPS_CERT_FILE}       = $H_CertFile{$self};
+        $H_KeyFile{$self}        and local $ENV{HTTPS_KEY_FILE}        = $H_KeyFile{$self};
 
 	if( $Debug ) {
-	    print STDERR SOAP::Serializer->envelope(method => $method, 
+	    print STDERR SOAP::Serializer->envelope(method => $method,
                                                     $Header{$self}, $request), "\n";
 	}
 
-	$Soap{$self}->readable( $Debug );
-	$Soap{$self}->outputxml( $Debug );
+#	$Soap{$self}->readable( $Debug );
+#	$Soap{$self}->outputxml( $Debug );
+
+	no warnings 'redefine';
+	local *SOAP::Deserializer::typecast = sub {shift; return shift};
 	$som = $Soap{$self}->call( $Header{$self}, $method => $request );
     }
 
     if( $Debug ) {
-	print STDERR $som, "\n";
-	$som = SOAP::Deserializer->deserialize($som);  ## FIXME: this
-                                                       ## doesn't put
-                                                       ## things back
-                                                       ## quite right
+        require Data::Dumper;
+        print STDERR Data::Dumper::Dumper($som->envelope);
+#        print STDERR SOAP::Serializer->envelope( response => $som->envelope->{Header}, 
+#        $som->envelope->{Body} );
     }
 
     if( ref($som) && $som->fault ) {
@@ -420,6 +420,20 @@ sure:
      parameters in your constructor AND that none of the corresponding
      B<HTTPS_*> environment variables are set.
 
+   * If your have already loaded Net::SSLeay (or IO::Socket::SSL),
+     then Net::HTTPS will prefer to use IO::Socket::SSL. I don't know
+     how to make IO::Socket::SSL use the right certificate from
+     SOAP::Lite (e.g., Crypt::SSLeay uses HTTPS_* environment
+     variables), so until then, you can use this hack:
+
+       local $IO::Socket::SSL::VERSION = undef;
+
+       $pp->DoExpressCheckoutPayment(...);
+
+     This will tell Net::HTTPS to ignore the fact that IO::Socket::SSL
+     is already loaded for this scope and import Net::SSL (part of the
+     Crypt::SSLeay package) for its 'configure()' method.
+
 See the DEBUGGING section below for further hints.
 
 =head1 DEBUGGING
@@ -430,24 +444,34 @@ B<Business::PayPal::API> by setting it's B<$Debug> variable:
   $Business::PayPal::API::Debug = 1;
   $pp->SetExpressCheckout( %args );
 
-these will print on STDERR (so check your error_log if running inside
-a web server).
-
-Unfortunately, while doing this, it also doesn't put things back the
-way they should be, so this should not be used in a production
-environment to troubleshoot (until I get this fixed). Patches gladly
-accepted which would let me get the correct SOM object back after
-serialization.
-
-Summary: while the output of $Debug is extremely useful in tracking
-down API problems, don't use B<$Debug> except in a sandbox until I can
-get the deserialziation of the SOM object fixed.
+these will print the XML being sent, and a Perl data structure of the
+SOM received STDERR (so check your error_log if running inside a web
+server). If anyone knows how to turn a SOAP::SOM object into XML
+without setting B<outputxml()>, let me know.
 
 =head1 DEVELOPMENT
 
-If you are a developer wanting to extend B<API> for other PayPal API
-calls, you can review F<RefundTransaction.pm> or B<ExpressCheckout.pm>
-for examples on how to do this.
+If you are a developer wanting to extend B<Business::PayPal::API> for
+other PayPal API calls, you can review F<RefundTransaction.pm> or
+B<ExpressCheckout.pm> for examples on how to do this until I have more
+time to write a document.
+
+In a nutshell:
+
+  package Business::PayPal::API::SomeAPIFunction;
+
+  use 5.008001;
+  use strict;
+  use warnings;
+
+  use SOAP::Lite 0.67;
+  use Business::PayPal::API ();
+
+  our @ISA = qw(Business::PayPal::API);
+
+  sub SomeAPIFunction {
+   ...
+  }
 
 =head2 EXPORT
 
