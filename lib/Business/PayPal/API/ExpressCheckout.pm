@@ -10,7 +10,8 @@ use Carp 'carp';
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.10';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.3 2006/03/21 22:05:19 scott Exp $';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.5 2006/03/23 17:28:10 scott Exp $';
+our @EXPORT_OK = qw( SetExpressCheckout GetExpressCheckoutDetails DoExpressCheckoutPayment );
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
 ## allow you to bill twice with it.
@@ -72,7 +73,8 @@ sub SetExpressCheckout {
     my $path = '/Envelope/Body/SetExpressCheckoutResponse';
 
     my %response = ();
-    if( $self->getErrors($som, $path, \%response) ) {
+    unless( $self->getBasic($som, $path, \%response) ) {
+        $self->getErrors($som, $path, \%response);
         return %response;
     }
 
@@ -100,7 +102,8 @@ sub GetExpressCheckoutDetails {
 
 
     my %details = ();
-    if( $self->getErrors($som, $path, \%details) ) {
+    unless( $self->getBasic($som, $path, \%details) ) {
+        $self->getErrors($som, $path, \%details);
         return %details;
     }
 
@@ -267,7 +270,8 @@ sub DoExpressCheckoutPayment {
     my $path = '/Envelope/Body/DoExpressCheckoutPaymentResponse';
 
     my %response = ();
-    if( $self->getErrors($som, $path, \%response) ) {
+    unless( $self->getBasic($som, $path, \%response) ) {
+        $self->getErrors($som, $path, \%response);
         return %response;
     }
 

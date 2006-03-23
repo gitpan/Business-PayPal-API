@@ -1,4 +1,4 @@
-Business-PayPal-API version 0.02
+Business-PayPal-API version 0.20
 ================================
 
 INSTALLATION
@@ -25,6 +25,18 @@ will be skipped.
 
 The format of the authentication tokens file defined by WPP_TEST may
 be found in the Business::PayPal::API documentation under "TESTING".
+
+USAGE
+
+  use Business::PayPal::API qw( ExpressCheckout );
+
+  my $pp = new Business::PayPal::API( Username => 'my_api.username.tld',
+                                      Password => 'API_PASSWORD',
+                                      CertFile => '/path/to/cert.pem',
+                                      KeyFile  => '/path/to/key.pem', );
+
+  ...
+  my %details = $pp->GetExpressCheckoutDetails( $token );
 
 DEPENDENCIES
 

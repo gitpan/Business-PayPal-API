@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.02';
-our $CVS_VERSION = '$Id: API.pm,v 1.4 2006/03/21 22:15:11 scott Exp $';
+our $VERSION = '0.20';
+our $CVS_VERSION = '$Id: API.pm,v 1.7 2006/03/23 17:28:10 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -31,6 +31,25 @@ my %H_PKCS12File;     ## path to certificate file (pkc12)
 my %H_PKCS12Password; ## password for certificate file (pkc12)
 my %H_CertFile;       ## PEM certificate
 my %H_KeyFile;        ## PEM private key
+
+sub import {
+    my $self    = shift;
+    my @modules = @_;
+
+    for my $module ( @modules ) {
+        eval( "use Business::PayPal::API::$module;" );
+        if( $@ ) {
+            warn $@;
+            next;
+        }
+
+        ## import 'exported' subroutines into our namespace
+        no strict 'refs';
+        for my $sub ( @{"Business::PayPal::API::" . $module . "::EXPORT_OK"} ) {
+            *{"Business::PayPal::API::" . $sub} = *{"Business::PayPal::API::" . $module . "::" . $sub};
+        }
+    }
+}
 
 sub new {
     my $class = shift;
@@ -123,10 +142,9 @@ sub doCall {
     }
 
     if( $Debug ) {
+        ## FIXME: would be nicer to dump a SOM to XML, but how to do that?
         require Data::Dumper;
         print STDERR Data::Dumper::Dumper($som->envelope);
-#        print STDERR SOAP::Serializer->envelope( response => $som->envelope->{Header}, 
-#        $som->envelope->{Body} );
     }
 
     if( ref($som) && $som->fault ) {
@@ -137,9 +155,30 @@ sub doCall {
     return $som;
 }
 
+sub getFieldsList {
+    my $self = shift;
+    my $som  = shift;
+    my $path = shift;
+    my $fields = shift;
+
+    my %trans_id = ();
+    my @records = ();
+    for my $rec ( $som->valueof($path) ) {
+        my %response = ();
+        $self->getFields( $som, $path, \%response, $fields );
+
+        ## avoid duplicates
+        next if $trans_id{$response{TransactionID}};
+        $trans_id{$response{TransactionID}} = 1;
+
+        push @records, \%response;
+    }
+
+    return \@records;
+}
+
 sub getFields {
     my $self = shift;
-
     my $som  = shift;
     my $path = shift;
     my $response = shift;
@@ -152,32 +191,38 @@ sub getFields {
     }
 }
 
+sub getBasic {
+    my $self = shift;
+    my $som  = shift;
+    my $path = shift;
+    my $details = shift;
+
+    for my $field qw( Ack Timestamp CorrelationID Version Build ) {
+        $details->{$field} = $som->valueof("$path/$field") || '';
+    }
+
+    return $details->{Ack} eq 'Success';
+}
+
 sub getErrors {
     my $self = shift;
     my $som  = shift;
     my $path = shift;
     my $details = shift;
 
-    $details->{Ack} = $som->valueof("$path/Ack") || '';
+    my @errors = ();
 
-    unless( $details->{Ack} =~ /^[Ss]uccess$/ ) {
-        my @errors = ();
-
-        for my $enode ( $som->valueof("$path/Errors") ) {
-            push @errors, { LongMessage => $enode->{LongMessage},
-                            ErrorCode   => $enode->{ErrorCode}, };
-        }
-        $details->{Errors} = \@errors;
-
-        return 1;
+    for my $enode ( $som->valueof("$path/Errors") ) {
+        push @errors, { LongMessage => $enode->{LongMessage},
+                        ErrorCode   => $enode->{ErrorCode}, };
     }
+    $details->{Errors} = \@errors;
 
     return;
 }
 
 1;
 __END__
-# Below is stub documentation for your module. You'd better edit it!
 
 =head1 NAME
 
@@ -185,7 +230,7 @@ Business::PayPal::API - PayPal API
 
 =head1 SYNOPSIS
 
-  use Business::PayPal::API;
+  use Business::PayPal::API qw( ExpressCheckout GetTransactionDetails );
 
   ## certificate authentication
   my $pp = new Business::PayPal::API
@@ -210,6 +255,8 @@ Business::PayPal::API - PayPal API
               Signature  => 'f7d03YCpEjIF3s9Dk23F2V1C1vbYYR3ALqc7jm0UrCcYm-3ksdiDwjfSeii',  ## ditto
               sandbox    => 1 );
 
+  my %response = $pp->SetExpressCheckout( ... );
+
 
 =head1 DESCRIPTION
 
@@ -219,10 +266,46 @@ the new 3-token authentication.
 It also support PayPal's development I<sandbox> for testing. See the
 B<sandbox> parameter to B<new()> below for details.
 
+B<Business::PayPal::API> can import other B<API> derived classes:
+
+  use Business::PayPal::API qw( RefundTransaction );
+
+This allows for much more concise and intuitive usage. For example,
+these two statements are equivalent:
+
+  use Business::PayPal::API::RefundTransaction;
+  my $pp = new Business::PayPal::API::RefundTransaction( ... );
+  $pp->RefundTransaction( ... );
+
+and:
+
+  use Business::PayPal::API qw( RefundTransaction );
+  my $pp = new Business::PayPal::API( ... );
+  $pp->RefundTransaction( ... );
+
+This becomes especially nice when you need to use multiple API calls
+in your program, allowing you to use the same object to invoke the
+various methods, instead of creating a new object for each subclass:
+
+  use Business::PayPal::API qw( GetTransactionDetails 
+                                TransactionSearch 
+                                RefundTransaction );
+  my $pp = new Business::PayPal::API( ... );
+  my $records = $pp->TransactionSearch( ... );
+
+  my %details = $pp->GetTransactionDetails( ... );
+
+  my %resp = $pp->RefundTransaction( ... );
+
+However, you may certainly use just the subclass if that's all you
+need. Every subclass should work as its own self-contained API.
+
+For details on B<Business::PayPal::API::*> subclasses, see each
+subclass's individual documentation.
+
 =head2 new
 
-Creates a new B<Business::PayPal::API> object. This is usually invoked
-from a subclass.
+Creates a new B<Business::PayPal::API> object.
 
 A note about certificate authentication: You may use either PKCS#12
 certificate authentication or PEM certificate authentication. See
@@ -458,7 +541,7 @@ time to write a document.
 
 In a nutshell:
 
-  package Business::PayPal::API::SomeAPIFunction;
+  package Business::PayPal::API::SomeAPI;
 
   use 5.008001;
   use strict;
@@ -468,10 +551,35 @@ In a nutshell:
   use Business::PayPal::API ();
 
   our @ISA = qw(Business::PayPal::API);
+  our @EXPORT_OK = qw( SomeAPIMethod );
 
-  sub SomeAPIFunction {
+  sub SomeAPIMethod {
    ...
   }
+
+Notice the B<@EXPORT_OK> variable. This is I<not> used by B<Exporter>:
+it is a special variable used by B<Business::PayPal::API> to know
+which methods to import when B<Business::PayPal::API> is run like
+this:
+
+  use Business::PayPal::API qw( SomeAPI );
+
+Id est, B<Business::PayPal::API> will import any subroutine into its
+own namespace from the B<@EXPORT_OK> array so it can be used like this:
+
+  use Business::PayPal::API qw( SomeAPI );
+  my $pp = new Business::PayPal::API( ... );
+  $pp->SomeAPIMethod( ... );
+
+Of course, we also do a 'use Business::PayPal::API' in the module so
+that it can be used as a standalone module, if necessary:
+
+  use Business::PayPal::API::SomeAPI;
+  my $pp = new Business::PayPal::API::SomeAPI( ... ); ## same args as superclass
+  $pp->SomeAPIMethod( ... );
+
+Adding the B<@EXPORT_OK> array in your module allows your module to be
+used in the most convenient way for the given circumstances.
 
 =head2 EXPORT
 

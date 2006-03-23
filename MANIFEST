@@ -2,13 +2,17 @@ Changes
 Makefile.PL
 MANIFEST
 README
-t/Business-PayPal-API.t
 lib/Business/PayPal/API.pm
 lib/Business/PayPal/API/ExpressCheckout.pm
+lib/Business/PayPal/API/GetTransactionDetails.pm
 lib/Business/PayPal/API/RefundTransaction.pm
+lib/Business/PayPal/API/TransactionSearch.pm
 t/API.pl
+t/Business-PayPal-API.t
 t/ExpressCheckout.t
+t/GetTransactionDetails.t
 t/RefundTransaction.t
+t/TransactionSearch.t
 auth.sample.3token
 auth.sample.cert
 META.yml                                 Module meta-data (added by MakeMaker)

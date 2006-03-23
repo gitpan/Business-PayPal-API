@@ -9,7 +9,8 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.10';
-our $CVS_VERSION = '$Id: RefundTransaction.pm,v 1.1 2006/03/16 23:33:49 scott Exp $';
+our $CVS_VERSION = '$Id: RefundTransaction.pm,v 1.3 2006/03/23 17:28:10 scott Exp $';
+our @EXPORT_OK = qw(RefundTransaction);
 
 sub RefundTransaction {
     my $self = shift;
@@ -50,7 +51,8 @@ sub RefundTransaction {
     my $path = '/Envelope/Body/RefundTransactionResponse';
 
     my %response = ();
-    if( $self->getErrors($som, $path, \%response) ) {
+    unless( $self->getBasic($som, $path, \%response) ) {
+        $self->getErrors($som, $path, \%response);
         return %response;
     }
 
@@ -109,7 +111,10 @@ If B<RefundType> is set to 'Full', B<Amount> is ignored (even if
 set). If B<RefundType> is set to 'Partial', B<Amount> is required.
 
 Returns a hash containing the results of the transaction. The B<Ack>
-element is likely the only useful return value.
+element is likely the only useful return value at the time of this
+revision (the Nov. 2005 errata to the Web Services API indicates that
+the documented fields 'TransactionID', 'GrossAmount', etc. are I<not>
+returned with this API call).
 
 Example:
 
@@ -133,6 +138,8 @@ information on handling errors.
 None by default.
 
 =head1 SEE ALSO
+
+L<https://developer.paypal.com/en_US/pdf/PP_APIReference.pdf>
 
 =head1 AUTHOR
 
