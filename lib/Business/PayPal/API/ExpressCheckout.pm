@@ -4,13 +4,12 @@ use 5.008001;
 use strict;
 use warnings;
 
-use SOAP::Lite 0.67; # +trace => 'all';
+use SOAP::Lite 0.67;
 use Business::PayPal::API ();
-use Carp 'carp';
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.10';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.5 2006/03/23 17:28:10 scott Exp $';
+our $VERSION = '0.11';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.6 2006/03/24 17:11:50 scott Exp $';
 our @EXPORT_OK = qw( SetExpressCheckout GetExpressCheckoutDetails DoExpressCheckoutPayment );
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
@@ -68,7 +67,8 @@ sub SetExpressCheckout {
 	    )->type( 'ns:SetExpressCheckoutRequestType' );
 
 
-    my $som = $self->doCall( SetExpressCheckoutReq => $request );
+    my $som = $self->doCall( SetExpressCheckoutReq => $request )
+      or return;
 
     my $path = '/Envelope/Body/SetExpressCheckoutResponse';
 
@@ -96,7 +96,8 @@ sub GetExpressCheckoutDetails {
 	      )
 	    )->type( 'ns:GetExpressCheckoutRequestType' );
 
-    my $som = $self->doCall( GetExpressCheckoutDetailsReq => $request );
+    my $som = $self->doCall( GetExpressCheckoutDetailsReq => $request )
+      or return;
 
     my $path = '/Envelope/Body/GetExpressCheckoutDetailsResponse';
 
@@ -264,8 +265,8 @@ sub DoExpressCheckoutPayment {
 	      )
 	    );
 
-    ## do the call
-    my $som = $self->doCall( DoExpressCheckoutPaymentReq => $request );
+    my $som = $self->doCall( DoExpressCheckoutPaymentReq => $request )
+      or return;
 
     my $path = '/Envelope/Body/DoExpressCheckoutPaymentResponse';
 

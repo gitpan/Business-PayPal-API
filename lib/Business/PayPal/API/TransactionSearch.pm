@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.10';
-our $CVS_VERSION = '$Id: TransactionSearch.pm,v 1.2 2006/03/23 17:28:10 scott Exp $';
+our $VERSION = '0.11';
+our $CVS_VERSION = '$Id: TransactionSearch.pm,v 1.3 2006/03/24 17:11:37 scott Exp $';
 our @EXPORT_OK = qw( TransactionSearch );
 
 sub TransactionSearch {
@@ -25,10 +25,10 @@ sub TransactionSearch {
                   InvoiceID        => 'xs:string',
                   PayerName        => 'xs:string',
                   AuctionItemNumer => 'xs:string',
-                  TransactionClass => 'ebl:PaymentTransactionClassCodeType',
+                  TransactionClass => '',
                   Amount           => 'ebl:BasicAmountType',
                   CurrencyCode     => 'xs:token',
-                  Status           => 'ebl:PaymentTransactionStatusCodeType',
+                  Status           => '',
                 );
 
     my @trans = 
@@ -46,7 +46,8 @@ sub TransactionSearch {
       ( TransactionSearchRequest => \SOAP::Data->value( @trans ) )
 	->type("ns:TransactionSearchRequestType");
 
-    my $som = $self->doCall( TransactionSearchReq => $request );
+    my $som = $self->doCall( TransactionSearchReq => $request )
+      or return;
 
     my $path = '/Envelope/Body/TransactionSearchResponse';
 

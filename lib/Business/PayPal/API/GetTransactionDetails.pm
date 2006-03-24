@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.10';
-our $CVS_VERSION = '$Id: GetTransactionDetails.pm,v 1.2 2006/03/23 17:28:10 scott Exp $';
+our $VERSION = '0.11';
+our $CVS_VERSION = '$Id: GetTransactionDetails.pm,v 1.3 2006/03/24 17:11:50 scott Exp $';
 our @EXPORT_OK = qw(GetTransactionDetails);  ## fake exporter
 
 sub GetTransactionDetails {
@@ -26,7 +26,8 @@ sub GetTransactionDetails {
       ( GetTransactionDetailsRequest => \SOAP::Data->value( @trans ) )
 	->type("ns:GetTransactionDetailsRequestType");
 
-    my $som = $self->doCall( GetTransactionDetailsReq => $request );
+    my $som = $self->doCall( GetTransactionDetailsReq => $request )
+      or return;
 
     my $path = '/Envelope/Body/GetTransactionDetailsResponse';
 

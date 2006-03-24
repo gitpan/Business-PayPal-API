@@ -43,4 +43,4 @@ my $startdate = '1998-01-01T00:00:00Z';  ## before PayPal
 my $resp = $pp->TransactionSearch( StartDate    => $startdate,
                                    TransactionID => $transid, );
 
-is( scalar @$resp, 1, "one matching transaction" );
+ok( scalar @$resp, "matching transaction(s) found" );

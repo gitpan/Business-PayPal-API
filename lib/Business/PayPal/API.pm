@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.20';
-our $CVS_VERSION = '$Id: API.pm,v 1.7 2006/03/23 17:28:10 scott Exp $';
+our $VERSION = '0.21';
+our $CVS_VERSION = '$Id: API.pm,v 1.8 2006/03/24 17:12:59 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -148,7 +148,9 @@ sub doCall {
     }
 
     if( ref($som) && $som->fault ) {
-        carp "Fault: " . $som->faultdetail . "\n";
+        carp "Fault: " . $som->faultstring 
+          . ( $som->faultdetail ? " (" . $som->faultdetail . ")" : '' ) 
+            . "\n";
         return;
     }
 
@@ -161,11 +163,13 @@ sub getFieldsList {
     my $path = shift;
     my $fields = shift;
 
+    return unless $som;
+
     my %trans_id = ();
     my @records = ();
     for my $rec ( $som->valueof($path) ) {
         my %response = ();
-        $self->getFields( $som, $path, \%response, $fields );
+        @response{keys %$fields} = @{$rec}{keys %$fields};
 
         ## avoid duplicates
         next if $trans_id{$response{TransactionID}};
@@ -184,6 +188,8 @@ sub getFields {
     my $response = shift;
     my $fields = shift;
 
+    return unless $som;
+
     for my $field ( keys %$fields ) {
         if( my $value = $som->valueof("$path/$fields->{$field}") ) {
             $response->{$field} = $value;
@@ -197,6 +203,8 @@ sub getBasic {
     my $path = shift;
     my $details = shift;
 
+    return unless $som;
+
     for my $field qw( Ack Timestamp CorrelationID Version Build ) {
         $details->{$field} = $som->valueof("$path/$field") || '';
     }
@@ -209,6 +217,8 @@ sub getErrors {
     my $som  = shift;
     my $path = shift;
     my $details = shift;
+
+    return unless $som;
 
     my @errors = ();
 

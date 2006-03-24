@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.10';
-our $CVS_VERSION = '$Id: RefundTransaction.pm,v 1.3 2006/03/23 17:28:10 scott Exp $';
+our $VERSION = '0.11';
+our $CVS_VERSION = '$Id: RefundTransaction.pm,v 1.4 2006/03/24 17:11:50 scott Exp $';
 our @EXPORT_OK = qw(RefundTransaction);
 
 sub RefundTransaction {
@@ -46,7 +46,8 @@ sub RefundTransaction {
       ( RefundTransactionRequest => \SOAP::Data->value( @ref_trans ) )
 	->type("ns:RefundTransactionRequestType");
 
-    my $som = $self->doCall( RefundTransactionReq => $request );
+    my $som = $self->doCall( RefundTransactionReq => $request )
+      or return;
 
     my $path = '/Envelope/Body/RefundTransactionResponse';
 
