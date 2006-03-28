@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.21';
-our $CVS_VERSION = '$Id: API.pm,v 1.8 2006/03/24 17:12:59 scott Exp $';
+our $VERSION = '0.22';
+our $CVS_VERSION = '$Id: API.pm,v 1.9 2006/03/28 18:05:03 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -247,7 +247,7 @@ Business::PayPal::API - PayPal API
             ( Username       => 'my_api1.domain.tld',
               Password       => 'this_is_my_password',
               PKCS12File     => '/path/to/cert.pck12',
-              PKCS12Password => '/path/to/certpw.pck12',
+              PKCS12Password => '(pck12 password)',
               sandbox        => 1 );
 
   ## PEM cert authentication
@@ -258,7 +258,7 @@ Business::PayPal::API - PayPal API
               KeyFile     => '/path/to/cert.pem',
               sandbox     => 1 );
 
-  ## 3-token authentication
+  ## 3-token (Signature) authentication
   my $pp = new Business::PayPal::API
             ( Username   => 'my_api1.domain.tld',
               Password   => 'Xdkis9k3jDFk39fj29sD9',  ## supplied by PayPal
@@ -271,7 +271,7 @@ Business::PayPal::API - PayPal API
 =head1 DESCRIPTION
 
 B<Business::PayPal::API> supports both certificate authentication and
-the new 3-token authentication.
+the new 3-token "Signature" authentication.
 
 It also support PayPal's development I<sandbox> for testing. See the
 B<sandbox> parameter to B<new()> below for details.
@@ -287,15 +287,17 @@ these two statements are equivalent:
   my $pp = new Business::PayPal::API::RefundTransaction( ... );
   $pp->RefundTransaction( ... );
 
-and:
+and more concisely:
 
   use Business::PayPal::API qw( RefundTransaction );
   my $pp = new Business::PayPal::API( ... );
   $pp->RefundTransaction( ... );
 
-This becomes especially nice when you need to use multiple API calls
-in your program, allowing you to use the same object to invoke the
-various methods, instead of creating a new object for each subclass:
+The advantage of this becomes clear when you need to use multiple API
+calls in your program; this alloww you to use the same object to
+invoke the various methods, instead of creating a new object for each
+subclass. Here is an example of a B<API> object used to invoke various
+PayPal APIs with the same object:
 
   use Business::PayPal::API qw( GetTransactionDetails 
                                 TransactionSearch 
@@ -317,27 +319,31 @@ subclass's individual documentation.
 
 Creates a new B<Business::PayPal::API> object.
 
-A note about certificate authentication: You may use either PKCS#12
-certificate authentication or PEM certificate authentication. See
-options below.
+A note about certificate authentication: PayPal (and this module)
+support either PKCS#12 certificate authentication or PEM certificate
+authentication. See options below.
 
 =over 4
 
 =item B<Username>
 
 Required. This is the PayPal API username, usually in the form of
-'my_api1.mydomain.tld'. You can find or create your credentials by
+'my_api1.mydomain.tld'. You can find or create your API credentials by
 logging into PayPal (if you want to do testing, as you should, you
 should also create a developer sandbox account) and going to:
 
   My Account -> Profile -> API Access -> Request API Credentials
 
+Please see the I<PayPal API Reference> and I<PayPal Sandbox User
+Guide> for details on creating a PayPal business account and sandbox
+account for testing.
+
 =item B<Password>
 
 Required. If you use certificate authentication, this is the PayPal
-API password you created yourself when you setup your certificate. If
-you use 3-token authentication, this is the password PayPal assigned
-you, along with the "API User Name" and "Signature Hash".
+API password created when you setup your certificate. If you use
+3-token (Signature) authentication, this is the password PayPal
+assigned you, along with the "API User Name" and "Signature Hash".
 
 =item B<Subject>
 
@@ -346,9 +352,9 @@ using your account. See the documents in L<SEE ALSO>.
 
 =item B<Signature>
 
-Required for 3-token authentication. This is the "Signature Hash" you
-received when you did "Request API Credentials" in your PayPal
-Business Account.
+Required for 3-token (Signature) authentication. This is the
+"Signature Hash" you received when you did "Request API Credentials"
+in your PayPal Business Account.
 
 =item B<PKCS12File>
 
@@ -511,13 +517,15 @@ sure:
    * if you use 3-Token authentication (i.e., Signature), you don't
      have any B<PKCS12*> parameters or B<CertFile> or B<KeyFile>
      parameters in your constructor AND that none of the corresponding
-     B<HTTPS_*> environment variables are set.
+     B<HTTPS_*> environment variables are set. PayPal prefers
+     certificate authentication since it occurs at connection time; if
+     it fails, it will not try Signature authentication.
 
-   * If your have already loaded Net::SSLeay (or IO::Socket::SSL),
-     then Net::HTTPS will prefer to use IO::Socket::SSL. I don't know
-     how to make IO::Socket::SSL use the right certificate from
-     SOAP::Lite (e.g., Crypt::SSLeay uses HTTPS_* environment
-     variables), so until then, you can use this hack:
+   * if you have already loaded Net::SSLeay (or IO::Socket::SSL), then
+     Net::HTTPS will prefer to use IO::Socket::SSL. I don't know how
+     to get SOAP::Lite to work with IO::Socket::SSL (e.g.,
+     Crypt::SSLeay uses HTTPS_* environment variables), so until then,
+     you can use this hack:
 
        local $IO::Socket::SSL::VERSION = undef;
 
@@ -538,18 +546,19 @@ B<Business::PayPal::API> by setting it's B<$Debug> variable:
   $pp->SetExpressCheckout( %args );
 
 these will print the XML being sent, and a Perl data structure of the
-SOM received STDERR (so check your error_log if running inside a web
-server). If anyone knows how to turn a SOAP::SOM object into XML
+SOM received on STDERR (so check your error_log if running inside a
+web server). If anyone knows how to turn a SOAP::SOM object into XML
 without setting B<outputxml()>, let me know.
 
 =head1 DEVELOPMENT
 
 If you are a developer wanting to extend B<Business::PayPal::API> for
-other PayPal API calls, you can review F<RefundTransaction.pm> or
-B<ExpressCheckout.pm> for examples on how to do this until I have more
-time to write a document.
+other PayPal API calls, you can review any of the included modules
+(e.g., F<RefundTransaction.pm> or F<ExpressCheckout.pm>) for examples
+on how to do this until I have more time to write a more complete
+document.
 
-In a nutshell:
+But in a nutshell:
 
   package Business::PayPal::API::SomeAPI;
 
@@ -574,8 +583,8 @@ this:
 
   use Business::PayPal::API qw( SomeAPI );
 
-Id est, B<Business::PayPal::API> will import any subroutine into its
-own namespace from the B<@EXPORT_OK> array so it can be used like this:
+That is, B<Business::PayPal::API> will import any subroutine into its
+own namespace from the B<@EXPORT_OK> array. Now it can be used like this:
 
   use Business::PayPal::API qw( SomeAPI );
   my $pp = new Business::PayPal::API( ... );
@@ -607,18 +616,19 @@ this module *may stop working*. I do not know if PayPal will preserve
 backward compatibility. That said, you can help me keep this module
 up-to-date if you notice such an event occuring.
 
-While this module was written, PayPal added 3-token authentication,
-which while being trivial to support and get working, is a good
-example of how quickly non-WSDL SOAP can get behind.
+While this module was written, PayPal added 3-token ("Signature")
+authentication, which while being trivial to support and get working,
+is a good example of how quickly non-WSDL SOAP can get behind.
 
 Also, I didn't implement a big fat class hierarchy to make this module
-"academically" correct. You'll notice that I fudged two colliding
-parameter names in B<DoExpressCheckoutPayment> as a result. The good
-news is that this was written quickly, works, and is dead-simple to
-use. The bad news is that this sort of collision might occur again as
-more and more data is sent in the API (call it 'eBay API bloat'). I'm
-willing to take the risk this will be rare (PayPal--please make it
-rare!).
+"academically" correct. You'll notice that I fudged colliding
+parameter names in B<DoExpressCheckoutPayment> and similar fudging may
+be found in B<GetTransactionDetails> and B<GetTransactionDetails>. The
+good news is that this was written quickly, works, and is dead-simple
+to use. The bad news is that this sort of collision might occur again
+as more and more data is sent in the API (call it 'eBay API
+bloat'). I'm willing to take the risk this will be rare
+(PayPal--please make it rare!).
 
 =head1 SEE ALSO
 

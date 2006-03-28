@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.11';
-our $CVS_VERSION = '$Id: GetTransactionDetails.pm,v 1.3 2006/03/24 17:11:50 scott Exp $';
+our $VERSION = '0.12';
+our $CVS_VERSION = '$Id: GetTransactionDetails.pm,v 1.4 2006/03/28 18:05:03 scott Exp $';
 our @EXPORT_OK = qw(GetTransactionDetails);  ## fake exporter
 
 sub GetTransactionDetails {
@@ -126,9 +126,13 @@ Business::PayPal::API::GetTransactionDetails - PayPal GetTransactionDetails API
 =head1 SYNOPSIS
 
   use Business::PayPal::API::GetTransactionDetails;
+  my $pp = new Business::PayPal::API::GetTransactionDetails ( ... );
+
+or
 
   ## see Business::PayPal::API documentation for parameters
-  my $pp = new Business::PayPal::API::GetTransactionDetails ( ... );
+  use Business::PayPal::API qw(GetTransactionDetails);
+  my $pp = new Business::PayPal::API( ... );
 
   my %response = $pp->GetTransactionDetails( TransactionID => $transid, );
 
@@ -222,8 +226,8 @@ Returns a hash containing the transaction details, including these fields:
   PII_ClosingDate
   PII_multiItem
 
-As described in the API document. Some fields have prefixes to remove
-ambiguity for like-named fields.
+As described in the API document. Note: some fields have prefixes to
+remove ambiguity for like-named fields (e.g., "PII_").
 
 Example:
 
