@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.22';
-our $CVS_VERSION = '$Id: API.pm,v 1.9 2006/03/28 18:05:03 scott Exp $';
+our $VERSION = '0.23';
+our $CVS_VERSION = '$Id: API.pm,v 1.10 2006/04/04 19:29:08 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -138,7 +138,14 @@ sub doCall {
 
 	no warnings 'redefine';
 	local *SOAP::Deserializer::typecast = sub {shift; return shift};
-	$som = $Soap{$self}->call( $Header{$self}, $method => $request );
+        eval {
+          $som = $Soap{$self}->call( $Header{$self}, $method => $request );
+        };
+
+        if( $@ ) {
+          carp $@;
+          return;
+        }
     }
 
     if( $Debug ) {
@@ -246,8 +253,8 @@ Business::PayPal::API - PayPal API
   my $pp = new Business::PayPal::API
             ( Username       => 'my_api1.domain.tld',
               Password       => 'this_is_my_password',
-              PKCS12File     => '/path/to/cert.pck12',
-              PKCS12Password => '(pck12 password)',
+              PKCS12File     => '/path/to/cert.pkcs12',
+              PKCS12Password => '(pkcs12 password)',
               sandbox        => 1 );
 
   ## PEM cert authentication

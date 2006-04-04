@@ -1,5 +1,19 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.23
+----------------------------
+revision 1.10
+date: 2006/04/04 19:29:08;  author: scott;  state: Exp;  lines: +12 -5
+- typo fix
+- wrap soap call in eval for safety (if ssl neg. fails w/ paypal, it croaks)
+- version bump
+
+Release 0.22
+----------------------------
+revision 1.9
+date: 2006/03/28 18:05:03;  author: scott;  state: Exp;  lines: +54 -44
+- documentation updates
+
 Release 0.21
 ----------------------------
 revision 1.8
