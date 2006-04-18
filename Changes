@@ -1,5 +1,11 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.30
+----------------------------
+revision 1.11
+date: 2006/04/18 16:23:18;  author: scott;  state: Exp;  lines: +2 -2
+- added DirectPayments API by Daniel Hembree. Thanks Daniel!
+
 Release 0.23
 ----------------------------
 revision 1.10
