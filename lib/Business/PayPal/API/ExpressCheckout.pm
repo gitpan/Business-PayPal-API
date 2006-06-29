@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.11';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.6 2006/03/24 17:11:50 scott Exp $';
+our $VERSION = '0.12';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.7 2006/06/29 02:36:24 scott Exp $';
 our @EXPORT_OK = qw( SetExpressCheckout GetExpressCheckoutDetails DoExpressCheckoutPayment );
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
@@ -125,7 +125,7 @@ sub GetExpressCheckoutDetails {
                        Street1         => 'PayerInfo/Address/Street1',
                        Street2         => 'PayerInfo/Address/Street2',
                        CityName        => 'PayerInfo/Address/CityName',
-                       StateOrProvince => 'PayerInfo/Address/StateOrProvice',
+                       StateOrProvince => 'PayerInfo/Address/StateOrProvince',
                        PostalCode      => 'PayerInfo/Address/PostalCode',
                        Country         => 'PayerInfo/Address/Country',
                      } );
@@ -161,7 +161,7 @@ sub DoExpressCheckoutPayment {
 		     ST_Street1                => 'xs:string',
 		     ST_Street2                => 'xs:string',
 		     ST_CityName               => 'xs:string',
-		     ST_StateOrProvice         => 'xs:string',
+		     ST_StateOrProvince        => 'xs:string',
 		     ST_Country                => 'xs:string',
 		     ST_PostalCode             => 'xs:string',
 		     );
@@ -432,7 +432,7 @@ parameters include:
   ST_Street1
   ST_Street2
   ST_CityName
-  ST_StateOrProvice
+  ST_StateOrProvince
   ST_Country
   ST_PostalCode
 

@@ -1,5 +1,11 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.31
+----------------------------
+revision 1.12
+date: 2006/06/29 02:36:24;  author: scott;  state: Exp;  lines: +2 -2
+- fix StateOrProvince typo [rt.cpan.org #20176]
+
 Release 0.30
 ----------------------------
 revision 1.11
