@@ -1,5 +1,15 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.32
+----------------------------
+revision 1.14
+date: 2006/07/03 15:46:24;  author: scott;  state: Exp;  lines: +16 -1
+- acknowledgements section
+----------------------------
+revision 1.13
+date: 2006/07/03 15:40:16;  author: scott;  state: Exp;  lines: +11 -2
+- fix for 3-token auth
+
 Release 0.31
 ----------------------------
 revision 1.12

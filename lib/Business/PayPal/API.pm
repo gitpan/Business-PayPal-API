@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.31';
-our $CVS_VERSION = '$Id: API.pm,v 1.12 2006/06/29 02:36:24 scott Exp $';
+our $VERSION = '0.32';
+our $CVS_VERSION = '$Id: API.pm,v 1.14 2006/07/03 15:46:24 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -18,6 +18,7 @@ our $Debug = 0;
 
 sub C_api_sandbox () { 'https://api.sandbox.paypal.com/2.0/' }
 sub C_api_live    () { 'https://api.paypal.com/2.0/' }
+sub C_api_live_3t () { 'https://api-3t.paypal.com/2.0/' }
 sub C_xmlns_pp    () { 'urn:ebay:api:PayPalAPI' }
 sub C_xmlns_ebay  () { 'urn:ebay:apis:eBLBaseComponents' }
 sub C_version     () { '1.0' }
@@ -74,6 +75,14 @@ sub new {
 	    ->uri( C_xmlns_pp );
     }
 
+    ## 3-token auth has its own server
+    elsif( $args{Signature} ) {
+	$Soap{$self} = SOAP::Lite
+	  ->proxy( C_api_live_3t )
+          ->uri( C_xmlns_pp );
+    }
+
+    ## certificate auth
     else {
 	$Soap{$self} = SOAP::Lite
 	    ->proxy( C_api_live )
@@ -636,6 +645,21 @@ to use. The bad news is that this sort of collision might occur again
 as more and more data is sent in the API (call it 'eBay API
 bloat'). I'm willing to take the risk this will be rare
 (PayPal--please make it rare!).
+
+=head1 ACKNOWLEDGEMENTS
+
+Wherein I acknowledge all the good folks who have contributed to this
+module in some way.
+
+=over 4
+
+=item * Daniel P. Hembree for authoring the DirectPayments extension
+
+=item * jshiles at base16consulting daught com for finding some API typos in the ExpressCheckout API
+
+=item * Andy Spiegl for giving me the heads-up on PayPal's new 3-token auth URI
+
+=back
 
 =head1 SEE ALSO
 
