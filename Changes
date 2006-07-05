@@ -1,5 +1,15 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.33
+----------------------------
+revision 1.15
+date: 2006/07/05 18:05:39;  author: scott;  state: Exp;  lines: +2 -2
+- fix documentation regarding SetExpressCheckout (returns a hash, not
+  a scalar). If you were following the code in the SYNOPSIS for
+  ExpressCheckout and getting a token with '3/8' or '4/8', you should
+  change the $token to %response, since SetExpressCheckout() returns a
+  hash (big thanks to Andy Spiegl for finding this).
+
 Release 0.32
 ----------------------------
 revision 1.14

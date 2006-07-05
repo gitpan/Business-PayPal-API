@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.12';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.7 2006/06/29 02:36:24 scott Exp $';
+our $VERSION = '0.13';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.8 2006/07/05 18:05:39 scott Exp $';
 our @EXPORT_OK = qw( SetExpressCheckout GetExpressCheckoutDetails DoExpressCheckoutPayment );
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
@@ -310,17 +310,17 @@ Business::PayPal::API::ExpressCheckout - PayPal Express Checkout API
   ## see Business::PayPal::API documentation for parameters
   my $pp = new Business::PayPal::API::ExpressCheckout ( ... );
 
-  my $token = $pp->SetExpressCheckout
-                ( OrderTotal => '55.43',   ## defaults to USD
-                  ReturnURL  => 'http://site.tld/return.html',
-                  CancelURL  => 'http://site.tld/canceltation.html', );
+  my %resp = $pp->SetExpressCheckout
+               ( OrderTotal => '55.43',   ## defaults to USD
+                 ReturnURL  => 'http://site.tld/return.html',
+                 CancelURL  => 'http://site.tld/canceltation.html', );
 
   ... time passes, buyer validates the token with PayPal ...
 
-  my %details = $pp->GetExpressCheckoutDetails($token);
+  my %details = $pp->GetExpressCheckoutDetails($resp{Token});
 
   ## now ask PayPal to xfer the money
-  my %payinfo = $pp->DoExpressCheckoutPayment( Token => $token,
+  my %payinfo = $pp->DoExpressCheckoutPayment( Token => $details{Token},
                                                PaymentAction => 'Sale',
                                                PayerID => $details{PayerID},
                                                OrderTotal => '55.43' );
