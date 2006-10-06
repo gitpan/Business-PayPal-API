@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.33';
-our $CVS_VERSION = '$Id: API.pm,v 1.15 2006/07/05 18:05:39 scott Exp $';
+our $VERSION = '0.40';
+our $CVS_VERSION = '$Id: API.pm,v 1.18 2006/10/06 17:53:44 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -21,7 +21,7 @@ sub C_api_live    () { 'https://api.paypal.com/2.0/' }
 sub C_api_live_3t () { 'https://api-3t.paypal.com/2.0/' }
 sub C_xmlns_pp    () { 'urn:ebay:api:PayPalAPI' }
 sub C_xmlns_ebay  () { 'urn:ebay:apis:eBLBaseComponents' }
-sub C_version     () { '1.0' }
+sub C_version     () { '2.0' }
 
 ## this is an inside-out object. Make sure you 'delete' additional
 ## members in DESTROY() as you add them.
@@ -69,25 +69,14 @@ sub new {
     $H_CertFile{$self}       = $args{CertFile}       || '';
     $H_KeyFile{$self}        = $args{KeyFile}        || '';
 
-    if( $args{sandbox} ) {
-	$Soap{$self} = SOAP::Lite
-	    ->proxy( C_api_sandbox )
-	    ->uri( C_xmlns_pp );
-    }
+    my $proxy = ($args{sandbox}
+		 ? C_api_sandbox
+		 : ($args{Signature}
+		    ? C_api_live_3t
+		    : C_api_live)
+		);
 
-    ## 3-token auth has its own server
-    elsif( $args{Signature} ) {
-	$Soap{$self} = SOAP::Lite
-	  ->proxy( C_api_live_3t )
-          ->uri( C_xmlns_pp );
-    }
-
-    ## certificate auth
-    else {
-	$Soap{$self} = SOAP::Lite
-	    ->proxy( C_api_live )
-	    ->uri( C_xmlns_pp );
-    }
+    $Soap{$self} = SOAP::Lite->proxy( $proxy )->uri( C_xmlns_pp );
 
     $Header{$self} = SOAP::Header
       ->name( RequesterCredentials => \SOAP::Header->value
@@ -551,6 +540,12 @@ sure:
      is already loaded for this scope and import Net::SSL (part of the
      Crypt::SSLeay package) for its 'configure()' method.
 
+   * if you receive a message like "500 Can't connect to
+     api.sandbox.paypal.com:443 (Illegal seek)", you'll need to make
+     sure you have Crypt::SSLeay installed. It seems that other crypto
+     modules don't do the certificate authentication quite as well,
+     and LWP needs this to negotiate the SSL connection with PayPal.
+
 See the DEBUGGING section below for further hints.
 
 =head1 DEBUGGING
@@ -616,6 +611,13 @@ that it can be used as a standalone module, if necessary:
 Adding the B<@EXPORT_OK> array in your module allows your module to be
 used in the most convenient way for the given circumstances.
 
+=head1 EXAMPLES
+
+Andy Spiegl <paypalcheckout.Spiegl@kascada.com> has kindly donated
+some example code (in German) for the ExpressCheckout API which may be
+found in the F<eg> directory of this archive. Additional code examples
+for other APIs may be found in the F<t> test directory.
+
 =head2 EXPORT
 
 None by default.
@@ -627,24 +629,22 @@ definitions directly and simply implement those (help, anyone?), I
 have essentially recreated all of those WSDL structures internally in
 this module.
 
-If PayPal changes their API (adds, removes, or changes parameters),
-this module *may stop working*. I do not know if PayPal will preserve
-backward compatibility. That said, you can help me keep this module
-up-to-date if you notice such an event occuring.
+(Note - 6 Oct 2006: SOAP::Lite's WSDL support is moving ahead, but
+slowly. The methods used by this API are considered "best practice"
+and are safe to use).
 
-While this module was written, PayPal added 3-token ("Signature")
-authentication, which while being trivial to support and get working,
-is a good example of how quickly non-WSDL SOAP can get behind.
+As with all web services, if PayPal stop supporting their API
+endpoint, this module *may stop working*. You can help me keep this
+module up-to-date if you notice such an event occuring.
 
 Also, I didn't implement a big fat class hierarchy to make this module
 "academically" correct. You'll notice that I fudged colliding
 parameter names in B<DoExpressCheckoutPayment> and similar fudging may
-be found in B<GetTransactionDetails> and B<GetTransactionDetails>. The
-good news is that this was written quickly, works, and is dead-simple
-to use. The bad news is that this sort of collision might occur again
-as more and more data is sent in the API (call it 'eBay API
-bloat'). I'm willing to take the risk this will be rare
-(PayPal--please make it rare!).
+be found in B<GetTransactionDetails>. The good news is that this was
+written quickly, works, and is dead-simple to use. The bad news is
+that this sort of collision might occur again as more and more data is
+sent in the API (call it 'eBay API bloat'). I'm willing to take the
+risk this will be rare (PayPal--please make it rare!).
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -653,11 +653,22 @@ module in some way.
 
 =over 4
 
-=item * Daniel P. Hembree for authoring the DirectPayments extension
+=item * Daniel P. Hembree
 
-=item * jshiles at base16consulting daught com for finding some API typos in the ExpressCheckout API
+for authoring the AuthorizationRequest, CaptureRequest,
+DirectPayments, ReauthorizationRequest, and VoidRequest extensions.
 
-=item * Andy Spiegl for giving me the heads-up on PayPal's new 3-token auth URI
+Danny's contact information may be found in the above modules.
+
+=item * jshiles at base16consulting daught com
+
+for finding some API typos in the ExpressCheckout API
+
+=item * Andy Spiegl <paypalcheckout.Spiegl@kascada.com>
+
+for giving me the heads-up on PayPal's new 3-token auth URI and for a
+sample command-line program (found in the 'eg' directory)
+demonstrating the ExpressCheckout API.
 
 =back
 

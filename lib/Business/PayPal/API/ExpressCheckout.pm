@@ -9,7 +9,7 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.13';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.8 2006/07/05 18:05:39 scott Exp $';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.9 2006/07/06 15:25:21 scott Exp $';
 our @EXPORT_OK = qw( SetExpressCheckout GetExpressCheckoutDetails DoExpressCheckoutPayment );
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
@@ -467,6 +467,13 @@ Required fields:
 
 See the B<ERROR HANDLING> section of B<Business::PayPal::API> for
 information on handling errors.
+
+=head1 EXAMPLES
+
+Andy Spiegl <paypalcheckout.Spiegl@kascada.com> has kindly donated
+some example code (in German) which may be found in the F<eg>
+directory of this archive. Additional code examples may be found in
+the F<t> test directory.
 
 =head2 EXPORT
 

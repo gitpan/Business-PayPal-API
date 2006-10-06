@@ -10,7 +10,7 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.01';
-our $CVS_VERSION = '$Id: DirectPayments.pm,v 1.1 2006/04/18 16:23:18 scott Exp $';
+our $CVS_VERSION = '$Id: DirectPayments.pm,v 1.2 2006/10/06 17:49:51 scott Exp $';
 our @EXPORT_OK = qw(DoDirectPaymentRequest);
 
 sub DoDirectPaymentRequest {
@@ -139,34 +139,34 @@ my $pp = new Business::PayPal::API(
                        Username => 'name_api1.example.org',
                        Password => 'somepass',
                        CertFile => '/path/to/tester1.cert_key_pem.txt',
-                       KeyFile =>  '/path/to/tester1.cert_key_pem.txt',
-                       sandbox => 1,
+                       KeyFile  => '/path/to/tester1.cert_key_pem.txt',
+                       sandbox  => 1,
                        );
 
 my %response = $pp->DoDirectPaymentRequest (
-                      PaymentAction		=> 'Sale',
-                      OrderTotal		=> 13.59,
-                      TaxTotal			=> 0.0,
-                      ShippingTotal		=> 0.0,
-                      ItemTotal			=> 0.0,
-                      HandlingTotal		=> 0.0,
-                      CreditCardType	=> 'Visa',
-                      CreditCardNumber	=> '4561435600988217',
-                      ExpMonth			=> '01',
-                      ExpYear			=> '2007',
-                      CVV2                    => '123',
-                      FirstName			=> 'James',
-                      LastName			=> 'PuffDaddy',
-                      Street1			=> '1st Street LaCausa',
-                      Street2			=> '',
-                      CityName			=> 'La',
-                      StateOrProvince	=> 'Ca',
-                      PostalCode		=> '90210',
-                      Country			=> 'US',
-                      Payer                    => 'Joe@Example.org',
-                      CurrencyID		=> 'USD',
-                      IPAddress			=> '10.0.0.1',
-                      MerchantSessionID	=> '10113301',
+                      PaymentAction      => 'Sale',
+                      OrderTotal         => 13.59,
+                      TaxTotal           => 0.0,
+                      ShippingTotal      => 0.0,
+                      ItemTotal          => 0.0,
+                      HandlingTotal      => 0.0,
+                      CreditCardType     => 'Visa',
+                      CreditCardNumber   => '4561435600988217',
+                      ExpMonth           => '01',
+                      ExpYear            => '2007',
+                      CVV2               => '123',
+                      FirstName          => 'James',
+                      LastName           => 'PuffDaddy',
+                      Street1            => '1st Street LaCausa',
+                      Street2            => '',
+                      CityName           => 'La',
+                      StateOrProvince    => 'Ca',
+                      PostalCode         => '90210',
+                      Country            => 'US',
+                      Payer              => 'Joe@Example.org',
+                      CurrencyID         => 'USD',
+                      IPAddress          => '10.0.0.1',
+                      MerchantSessionID  => '10113301',
                       );
 
 =head1 DESCRIPTION
@@ -217,7 +217,7 @@ Example:
                     PaymentAction => 'Sale',
                     OrderTotal    => '10.99',
                     ...
-			 );
+             );
 
   unless( $resp{Ack} ne 'Success' ) {
       for my $error ( @{$response{Errors}} ) {

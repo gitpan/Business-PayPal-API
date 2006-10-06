@@ -24,8 +24,9 @@ Review the Business accounts transaction history:
 
     My Account -> History (tab)
 
-Click the 'Details' link for a transaction. Copy the Transaction ID
-for that transaction. The transaction id may appear like this:
+Click the 'Details' link for a transaction whose status is
+'Completed'. Copy the Transaction ID for that transaction. The
+transaction id may appear like this:
 
     Express Checkout Payment Received (ID # 2DE2563K55B16978M)
 

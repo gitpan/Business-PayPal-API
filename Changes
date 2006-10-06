@@ -1,5 +1,27 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.40
+----------------------------
+revision 1.18
+date: 2006/10/06 17:53:44;  author: scott;  state: Exp;  lines: +2 -2
+- version bump
+----------------------------
+revision 1.17
+date: 2006/10/06 17:49:50;  author: scott;  state: Exp;  lines: +42 -38
+- using PayPal API version 2.0
+- note about SSL requirements of LWP
+- minor documentation cleanup
+- DirectPayments tests added
+- New modules (with tests!) from Danny Hembree:
+  AuthorizationRequest.pm
+  CaptureRequest.pm
+  ReauthorizationRequest.pm
+  VoidRequest.pm
+----------------------------
+revision 1.16
+date: 2006/07/06 15:25:21;  author: scott;  state: Exp;  lines: +9 -2
+- add acknowledgement and pointers to example code from Andy Spiegl and others
+
 Release 0.33
 ----------------------------
 revision 1.15

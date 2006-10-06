@@ -24,8 +24,8 @@ Review the Business accounts transaction history:
 
     My Account -> History (tab)
 
-Follow the 'Details' link for a transaction that occurred in the past
-60 days.
+Follow the 'Details' link for a transaction (whose status is
+'Completed') that occurred in the past 60 days.
 
 Copy the Transaction ID for that transaction. It may appear like this:
 
