@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.40';
-our $CVS_VERSION = '$Id: API.pm,v 1.18 2006/10/06 17:53:44 scott Exp $';
+our $VERSION = '0.41';
+our $CVS_VERSION = '$Id: API.pm,v 1.19 2007/05/15 20:46:56 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -506,7 +506,10 @@ authentication (i.e., PayPal will use the first authentication
 credentials presented to it, and if they fail, the connection is
 aborted).
 
-If you are experiencing PayPal authentication errors, you should make
+=head1 TROUBLESHOOTING
+
+If you are experiencing PayPal authentication errors (e.g., "Security
+header is not valid", "SSL negotiation failed", etc.), you should make
 sure:
 
    * your username and password match those found in your PayPal
@@ -515,6 +518,11 @@ sure:
 
    * you're not trying to use your live username and password for
      sandbox testing and vice versa.
+
+   * if the sandbox works but "live" does not, make sure you've turned
+     off the 'sandbox' parameter correctly. Otherwise you'll be
+     passing your PayPal sandbox credentials to PayPal's live site
+     (which won't work).
 
    * if you use certificate authentication, your certificate must be
      the correct one (live or sandbox) depending on what you're doing.
@@ -525,6 +533,17 @@ sure:
      B<HTTPS_*> environment variables are set. PayPal prefers
      certificate authentication since it occurs at connection time; if
      it fails, it will not try Signature authentication.
+
+     Try clearing your environment:
+
+         ## delete all HTTPS, SSL env
+         delete $ENV{$_} for grep { /^(HTTPS|SSL)/ } keys %ENV;
+         
+         ## now put our own HTTPS env back in
+         $ENV{HTTPS_CERT_FILE} = '/var/path/to/cert.pem';
+         
+         ## create our paypal object
+         my $pp = new Business::PayPal::API...
 
    * if you have already loaded Net::SSLeay (or IO::Socket::SSL), then
      Net::HTTPS will prefer to use IO::Socket::SSL. I don't know how
@@ -556,10 +575,12 @@ B<Business::PayPal::API> by setting it's B<$Debug> variable:
   $Business::PayPal::API::Debug = 1;
   $pp->SetExpressCheckout( %args );
 
-these will print the XML being sent, and a Perl data structure of the
-SOM received on STDERR (so check your error_log if running inside a
-web server). If anyone knows how to turn a SOAP::SOM object into XML
-without setting B<outputxml()>, let me know.
+this will print the XML being sent, and dump a Perl data structure of
+the SOM received on STDERR (so check your error_log if running inside
+a web server).
+
+If anyone knows how to turn a SOAP::SOM object into XML without
+setting B<outputxml()>, let me know.
 
 =head1 DEVELOPMENT
 
@@ -587,10 +608,10 @@ But in a nutshell:
    ...
   }
 
-Notice the B<@EXPORT_OK> variable. This is I<not> used by B<Exporter>:
-it is a special variable used by B<Business::PayPal::API> to know
-which methods to import when B<Business::PayPal::API> is run like
-this:
+Notice the B<@EXPORT_OK> variable. This is I<not> used by B<Exporter>
+(we don't load Exporter at all): it is a special variable used by
+B<Business::PayPal::API> to know which methods to import when
+B<Business::PayPal::API> is run like this:
 
   use Business::PayPal::API qw( SomeAPI );
 
@@ -658,7 +679,8 @@ module in some way.
 for authoring the AuthorizationRequest, CaptureRequest,
 DirectPayments, ReauthorizationRequest, and VoidRequest extensions.
 
-Danny's contact information may be found in the above modules.
+Danny's contact information may be found in the AUTHOR section of the
+above modules.
 
 =item * jshiles at base16consulting daught com
 
