@@ -1,5 +1,13 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.50
+----------------------------
+revision 1.20
+date: 2007/05/21 21:59:33;  author: scott;  state: Exp;  lines: +5 -5
+- minor doc changes
+- new Mass Pay API module included
+----------------------------
+
 Release 0.41
 ----------------------------
 revision 1.19

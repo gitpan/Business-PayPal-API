@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.41';
-our $CVS_VERSION = '$Id: API.pm,v 1.19 2007/05/15 20:46:56 scott Exp $';
+our $VERSION = '0.50';
+our $CVS_VERSION = '$Id: API.pm,v 1.20 2007/05/21 21:59:33 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -299,7 +299,7 @@ and more concisely:
   $pp->RefundTransaction( ... );
 
 The advantage of this becomes clear when you need to use multiple API
-calls in your program; this alloww you to use the same object to
+calls in your program; this allows you to use the same object to
 invoke the various methods, instead of creating a new object for each
 subclass. Here is an example of a B<API> object used to invoke various
 PayPal APIs with the same object:
@@ -639,7 +639,7 @@ some example code (in German) for the ExpressCheckout API which may be
 found in the F<eg> directory of this archive. Additional code examples
 for other APIs may be found in the F<t> test directory.
 
-=head2 EXPORT
+=head1 EXPORT
 
 None by default.
 
@@ -670,7 +670,7 @@ risk this will be rare (PayPal--please make it rare!).
 =head1 ACKNOWLEDGEMENTS
 
 Wherein I acknowledge all the good folks who have contributed to this
-module in some way.
+module in some way:
 
 =over 4
 
