@@ -9,7 +9,7 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.13';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.9 2006/07/06 15:25:21 scott Exp $';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.10 2007/08/29 20:56:42 scott Exp $';
 our @EXPORT_OK = qw( SetExpressCheckout GetExpressCheckoutDetails DoExpressCheckoutPayment );
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
@@ -117,10 +117,11 @@ sub GetExpressCheckoutDetails {
                        ContactPhone    => 'ContactPhone',
                        Payer           => 'PayerInfo/Payer',
                        PayerID         => 'PayerInfo/PayerID',
-                       PayerStatus     => 'PayerInfo/Status',
+                       PayerStatus     => 'PayerInfo/PayerStatus',
                        FirstName       => 'PayerInfo/PayerName/FirstName',
                        LastName        => 'PayerInfo/PayerName/LastName',
                        PayerBusiness   => 'PayerInfo/PayerBusiness',
+                       AddressStatus   => 'PayerInfo/Address/AddressStatus',
                        Name            => 'PayerInfo/Address/Name',
                        Street1         => 'PayerInfo/Address/Street1',
                        Street2         => 'PayerInfo/Address/Street2',
@@ -395,6 +396,7 @@ Returns a hash with the following keys:
   FirstName
   LastName
   PayerBusiness
+  AddressStatus
   Name
   Street1
   Street2

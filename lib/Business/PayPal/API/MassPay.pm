@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.01';
-our $CVS_VERSION = '$Id: MassPay.pm,v 1.1 2007/05/21 21:58:47 scott Exp $';
+our $VERSION = '0.02';
+our $CVS_VERSION = '$Id: MassPay.pm,v 1.2 2007/08/01 00:14:38 scott Exp $';
 our @EXPORT_OK = qw( MassPay );
 
 sub MassPay {
@@ -156,7 +156,7 @@ Example:
                                                Note => "Enjoy the money. Don't spend it all in one place." } ] );
 
   unless( $resp{Ack} eq 'Success' ) {
-    die "Failed: " . $resp{LongMessage} . "\n";
+    die "Failed: " . $resp{Errors}[0]{LongMessage} . "\n";
   }
 
 =head2 ERROR HANDLING

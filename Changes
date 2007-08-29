@@ -1,5 +1,11 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.51
+----------------------------
+revision 1.10
+date: 2007/08/29 20:56:42;  author: scott;  state: Exp;  lines: +4 -2
+- fix PayerStatus location in DOM, add AddressStatus element (patch: Michael Hendricks)
+
 Release 0.50
 ----------------------------
 revision 1.20

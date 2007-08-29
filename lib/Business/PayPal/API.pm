@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.50';
-our $CVS_VERSION = '$Id: API.pm,v 1.20 2007/05/21 21:59:33 scott Exp $';
+our $VERSION = '0.51';
+our $CVS_VERSION = '$Id: API.pm,v 1.21 2007/08/29 20:57:44 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
