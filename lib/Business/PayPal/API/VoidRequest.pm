@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.11';
-our $CVS_VERSION = '$Id: VoidRequest.pm,v 1.1 2006/10/06 17:49:51 scott Exp $';
+our $VERSION = '0.12';
+our $CVS_VERSION = '$Id: VoidRequest.pm,v 1.2 2007/09/27 20:32:32 scott Exp $';
 our @EXPORT_OK = qw(DoVoidRequest);
 
 sub DoVoidRequest {
@@ -67,8 +67,8 @@ Business::PayPal::API::VoidRequest - PayPal VoidRequest API
   ## see Business::PayPal::API documentation for parameters
   my $pp = new Business::PayPal::API::VoidRequest ( ... );
 
-  my %response = $pp->VoidRequest( AuthorizationID => $transid
-                                   Note          => "Please come again!" );
+  my %response = $pp->DoVoidRequest( AuthorizationID => $transid
+                                     Note            => "Please come again!" );
 
 =head1 DESCRIPTION
 
@@ -78,9 +78,9 @@ PayPal's SOAP API server. It also implements support for testing via
 PayPal's I<sandbox>. Please see L<Business::PayPal::API> for details
 on using the PayPal sandbox.
 
-=head2 VoidRequest
+=head2 DoVoidRequest
 
-Implements PayPal's B<VoidRequest> API call. Supported
+Implements PayPal's B<DoVoidRequest> API call. Supported
 parameters include:
 
   AuthorizationID
@@ -98,8 +98,8 @@ returned with this API call).
 
 Example:
 
-  my %resp = $pp->VoidRequest( AuthorizationID => $trans_id,
-                               Note        => 'Sorry about that.' );
+  my %resp = $pp->DoVoidRequest( AuthorizationID => $trans_id,
+                                 Note            => 'Sorry about that.' );
 
   unless( $resp{Ack} ne 'Success' ) {
       for my $error ( @{$response{Errors}} ) {

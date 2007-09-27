@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.11';
-our $CVS_VERSION = '$Id: ReauthorizationRequest.pm,v 1.1 2006/10/06 17:49:51 scott Exp $';
+our $VERSION = '0.12';
+our $CVS_VERSION = '$Id: ReauthorizationRequest.pm,v 1.2 2007/09/27 20:32:32 scott Exp $';
 our @EXPORT_OK = qw(DoReauthorizationRequest);
 
 sub DoReauthorizationRequest {
@@ -40,7 +40,7 @@ sub DoReauthorizationRequest {
     my $som = $self->doCall( DoReauthorizationReq => $request )
       or return;
 
-    my $path = '/Envelope/Body/ReauthorizationResponse';
+    my $path = '/Envelope/Body/DoReauthorizationResponse';
 
     my %response = ();
     unless( $self->getBasic($som, $path, \%response) ) {
@@ -70,7 +70,7 @@ Business::PayPal::API::ReauthorizationRequest - PayPal ReauthorizationRequest AP
   ## see Business::PayPal::API documentation for parameters
   my $pp = new Business::PayPal::API::ReauthorizationRequest ( ... );
 
-  my %response = $pp->ReauthorizationRequest (
+  my %response = $pp->DoReauthorizationRequest (
                                          AuthorizationID => $transid,
                                          Amount          => $amount,
                                          CurrencyID      => $currencyID
@@ -79,14 +79,14 @@ Business::PayPal::API::ReauthorizationRequest - PayPal ReauthorizationRequest AP
 =head1 DESCRIPTION
 
 B<Business::PayPal::API::ReauthorizationRequest> implements PayPal's
-B<ReauthorizationRequest> API using SOAP::Lite to make direct API calls to
+B<DoReauthorizationRequest> API using SOAP::Lite to make direct API calls to
 PayPal's SOAP API server. It also implements support for testing via
 PayPal's I<sandbox>. Please see L<Business::PayPal::API> for details
 on using the PayPal sandbox.
 
-=head2 ReauthorizationRequest
+=head2 DoReauthorizationRequest
 
-Implements PayPal's B<ReauthorizationRequest> API call. Supported
+Implements PayPal's B<DoReauthorizationRequest> API call. Supported
 parameters include:
 
   AuthorizationID
@@ -95,14 +95,14 @@ parameters include:
 
 as described in the PayPal "Web Services API Reference" document. The
 default B<currencyID> setting is 'USD' if not otherwise specified. The
-Reauthorization is not allowed before the three day grace period set
+DoReauthorization is not allowed before the three day grace period set
 for the original AuthorizeRequest.
 
 Returns a hash containing the results of the transaction.
 
 Example:
 
-  my %resp = $pp->ReauthorizationRequest (
+  my %resp = $pp->DoReauthorizationRequest (
                                      AuthorizationID => $trans_id,
                                      Amount          => '15.00',
                                      CurrencyID      => 'USD'

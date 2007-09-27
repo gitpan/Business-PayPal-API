@@ -9,8 +9,8 @@ use SOAP::Lite;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.01';
-our $CVS_VERSION = '$Id: DirectPayments.pm,v 1.2 2006/10/06 17:49:51 scott Exp $';
+our $VERSION = '0.03';
+our $CVS_VERSION = '$Id: DirectPayments.pm,v 1.3 2007/09/27 20:32:32 scott Exp $';
 our @EXPORT_OK = qw(DoDirectPaymentRequest);
 
 sub DoDirectPaymentRequest {
@@ -21,6 +21,7 @@ sub DoDirectPaymentRequest {
                  # Payment Detail
                  OrderTotal        => 'xs:string',
                  ItemTotal         => 'xsd:string',
+                 ShippingTotal     => 'xsd:string',
                  TaxTotal          => 'xsd:string',
                  ButtonSource      => 'xsd:string',
                  # Credit Card
@@ -86,6 +87,8 @@ sub DoDirectPaymentRequest {
                       SOAP::Data->name(ItemTotal => $args{ItemTotal})
                       ->attr({currencyID => $args{currencyID}})->type($types{currencyID}),
                       SOAP::Data->name(TaxTotal => $args{TaxTotal})
+                      ->attr({currencyID => $args{currencyID}})->type($types{currencyID}),
+                      SOAP::Data->name(ShippingTotal => $args{ShippingTotal})
                       ->attr({currencyID => $args{currencyID}})->type($types{currencyID}),
                       SOAP::Data->name(ButtonSource => $args{ButtonSource})->type($types{ButtonSource})
                     );

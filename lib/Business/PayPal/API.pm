@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.51';
-our $CVS_VERSION = '$Id: API.pm,v 1.21 2007/08/29 20:57:44 scott Exp $';
+our $VERSION = '0.52';
+our $CVS_VERSION = '$Id: API.pm,v 1.22 2007/09/27 20:32:31 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -16,7 +16,8 @@ our $Debug = 0;
 ## NOTE: type definitions, at which point this module will become much
 ## NOTE: smaller (or non-existent).
 
-sub C_api_sandbox () { 'https://api.sandbox.paypal.com/2.0/' }
+sub C_api_sandbox    () { 'https://api.sandbox.paypal.com/2.0/' }
+sub C_api_sandbox_3t () { 'https://api-3t.sandbox.paypal.com/2.0/' }
 sub C_api_live    () { 'https://api.paypal.com/2.0/' }
 sub C_api_live_3t () { 'https://api-3t.paypal.com/2.0/' }
 sub C_xmlns_pp    () { 'urn:ebay:api:PayPalAPI' }
@@ -70,7 +71,9 @@ sub new {
     $H_KeyFile{$self}        = $args{KeyFile}        || '';
 
     my $proxy = ($args{sandbox}
-		 ? C_api_sandbox
+		 ? ($args{Signature}
+                    ? C_api_sandbox_3t
+                    : C_api_sandbox)
 		 : ($args{Signature}
 		    ? C_api_live_3t
 		    : C_api_live)
@@ -682,7 +685,7 @@ DirectPayments, ReauthorizationRequest, and VoidRequest extensions.
 Danny's contact information may be found in the AUTHOR section of the
 above modules.
 
-=item * jshiles at base16consulting daught com
+=item * <jshiles at base16consulting daught com>
 
 for finding some API typos in the ExpressCheckout API
 
@@ -691,6 +694,15 @@ for finding some API typos in the ExpressCheckout API
 for giving me the heads-up on PayPal's new 3-token auth URI and for a
 sample command-line program (found in the 'eg' directory)
 demonstrating the ExpressCheckout API.
+
+=item * Ollie Ready <oready at drjays daught com>
+
+for the heads-up on the newest 3-token auth URI as well as a pile of
+documentation inconsistencies.
+
+=item * Michael Hendricks <michael at ndrix daught org>
+
+for a patch that adds ShippingTotal to the DirectPayments module.
 
 =back
 
@@ -707,7 +719,7 @@ Scott Wiersdorf, E<lt>scott@perlcode.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 by Scott Wiersdorf
+Copyright (C) 2006, 2007 by Scott Wiersdorf
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,

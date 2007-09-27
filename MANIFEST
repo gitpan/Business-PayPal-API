@@ -25,4 +25,4 @@ t/RefundTransaction.t
 t/TransactionSearch.t
 auth.sample.3token
 auth.sample.cert
-META.yml                                 Module meta-data (added by MakeMaker)
+META.yml

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Business-PayPal-API
-version:             0.51
+version:             0.52
 abstract:            PayPal API
 license:             ~
 generated_by:        ExtUtils::MakeMaker version 6.36
