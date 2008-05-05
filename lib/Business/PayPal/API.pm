@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.52';
-our $CVS_VERSION = '$Id: API.pm,v 1.22 2007/09/27 20:32:31 scott Exp $';
+our $VERSION = '0.61';
+our $CVS_VERSION = '$Id: API.pm,v 1.23 2008/05/05 15:10:40 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -22,7 +22,7 @@ sub C_api_live    () { 'https://api.paypal.com/2.0/' }
 sub C_api_live_3t () { 'https://api-3t.paypal.com/2.0/' }
 sub C_xmlns_pp    () { 'urn:ebay:api:PayPalAPI' }
 sub C_xmlns_ebay  () { 'urn:ebay:apis:eBLBaseComponents' }
-sub C_version     () { '2.0' }
+sub C_version     () { '3.0' }  ## 3.0 adds RecurringPayments
 
 ## this is an inside-out object. Make sure you 'delete' additional
 ## members in DESTROY() as you add them.
@@ -64,6 +64,7 @@ sub new {
     $args{Signature} ||= '';
     $args{Subject}   ||= '';
     $args{sandbox} = 1 unless exists $args{sandbox};
+    $args{timeout}   ||= 0;
 
     $H_PKCS12File{$self}     = $args{PKCS12File}     || '';
     $H_PKCS12Password{$self} = $args{PKCS12Password} || '';
@@ -79,7 +80,7 @@ sub new {
 		    : C_api_live)
 		);
 
-    $Soap{$self} = SOAP::Lite->proxy( $proxy )->uri( C_xmlns_pp );
+    $Soap{$self} = SOAP::Lite->proxy( $proxy, timeout => $args{timeout} )->uri( C_xmlns_pp );
 
     $Header{$self} = SOAP::Header
       ->name( RequesterCredentials => \SOAP::Header->value
@@ -199,7 +200,7 @@ sub getFields {
     return unless $som;
 
     for my $field ( keys %$fields ) {
-        if( my $value = $som->valueof("$path/$fields->{$field}") ) {
+        if( defined( my $value = $som->valueof("$path/$fields->{$field}") ) ) {
             $response->{$field} = $value;
         }
     }
@@ -511,6 +512,8 @@ aborted).
 
 =head1 TROUBLESHOOTING
 
+=head2 PayPal Authentication Errors
+
 If you are experiencing PayPal authentication errors (e.g., "Security
 header is not valid", "SSL negotiation failed", etc.), you should make
 sure:
@@ -569,6 +572,35 @@ sure:
      and LWP needs this to negotiate the SSL connection with PayPal.
 
 See the DEBUGGING section below for further hints.
+
+=head2 PayPal Munging URLs
+
+PayPal seems to be munging my URLs when it returns.
+
+SOAP::Lite follows the XML specification carefully, and encodes '&'
+and '<' characters before applying them to the SOAP document. PayPal
+does not properly URL-decode HTML entities '&amp;' and '&lt;' on the
+way back, so if you have an ampersand in your ReturnURL (for example),
+your customers will be redirected here:
+
+  http://domain.tld/prog?arg1=foo&amp;arg2=bar
+
+instead of here:
+
+  http://domain.tld/prog?arg1=foo&arg2=bar
+
+Solution:
+
+Use CDATA tags to wrap your request:
+
+  ReturnURL => '<![CDATA[http://domain.tld/prog?arg1=foo&arg2=bar]]>'
+
+You may also use semicolons instead of ampersands to separate your URL
+arguments:
+
+  ReturnURL => 'http://domain.tld/prog?arg1=foo;arg2=bar'
+
+(thanks to Ollie Ready)
 
 =head1 DEBUGGING
 

@@ -9,7 +9,7 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.13';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.10 2007/08/29 20:56:42 scott Exp $';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.12 2008/05/05 15:11:51 scott Exp $';
 our @EXPORT_OK = qw( SetExpressCheckout GetExpressCheckoutDetails DoExpressCheckoutPayment );
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
@@ -43,19 +43,27 @@ sub SetExpressCheckout {
     ## set some defaults
     $args{PaymentAction} ||= 'Sale';
     $args{currencyID}    ||= 'USD';
+    my $currencyID = delete $args{currencyID};
 
     ## SetExpressCheckoutRequestDetails
     my @secrd = 
       ( SOAP::Data->name( OrderTotal => delete $args{OrderTotal} )->type( $types{OrderTotal} )
-	->attr( {currencyID => delete $args{currencyID}, xmlns => $self->C_xmlns_ebay}),
+	->attr( {currencyID => $currencyID, xmlns => $self->C_xmlns_ebay}),
 	SOAP::Data->name( ReturnURL => delete $args{ReturnURL} )->type( $types{ReturnURL} ),
 	SOAP::Data->name( CancelURL => delete $args{CancelURL} )->type( $types{CancelURL} ),
       );
 
     ## add all the other fields
     for my $field ( keys %types ) {
-	next unless $args{$field};
-	push @secrd, SOAP::Data->name( $field => $args{$field} )->type( $types{$field} );
+	next unless defined $args{$field};
+
+        if( $field eq 'MaxAmount' ) {
+            push @secrd, SOAP::Data->name( $field => $args{$field} )->type( $types{$field} )
+              ->attr( {currencyID => $currencyID, xmlns => $self->C_xmlns_ebay} );
+        }
+        else {
+            push @secrd, SOAP::Data->name( $field => $args{$field} )->type( $types{$field} );
+        }
     }
 
     my $request = SOAP::Data
@@ -373,6 +381,28 @@ Required fields:
 
     my %resp = $pp->SetExpressCheckout();
     my $token = $resp{Token};
+
+Example (courtesy Ollie Ready):
+
+  my $address = {
+        Name            =>      'Some Customer',
+        Street1         =>      '888 Test St.',
+        Street2         =>      'Suite 9',
+        CityName        =>      'San Diego',
+        StateOrProvince =>      'CA',
+        PostalCode      =>      '92111',
+        Country         =>      'US',
+        Phone           =>      '123-123-1234',
+  };
+
+  my %response = $pp->SetExpressCheckout(
+        OrderTotal      =>      '11.01',
+        ReturnURL       =>      '<![CDATA[http://example.com/p?cmd=checkout]]>',
+        CancelURL       =>      'http://example.com',
+        PaymentAction   =>      'Authorization',
+        AddressOverride =>      1,
+        Address         =>      $address,
+  );
 
 =head2 GetExpressCheckoutDetails
 

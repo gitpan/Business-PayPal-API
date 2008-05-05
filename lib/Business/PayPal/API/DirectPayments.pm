@@ -10,7 +10,7 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.03';
-our $CVS_VERSION = '$Id: DirectPayments.pm,v 1.3 2007/09/27 20:32:32 scott Exp $';
+our $CVS_VERSION = '$Id: DirectPayments.pm,v 1.4 2008/05/05 15:11:14 scott Exp $';
 our @EXPORT_OK = qw(DoDirectPaymentRequest);
 
 sub DoDirectPaymentRequest {
@@ -34,13 +34,21 @@ sub DoDirectPaymentRequest {
                  # Payer Name
                  FirstName         => 'xs:string',
                  LastName          => 'xs:string',
-                 #  Payer Address - shipping address not yet implemented
+                 #  Payer Address
                  Street1           => 'xs:string',
                  Street2           => 'xs:string',
                  CityName          => 'xs:string',
                  StateOrProvince   => 'xs:string',
                  Country           => 'xs:string',
                  PostalCode        => 'xs:string',
+                 # Shipping Address
+                 ShipToName             => 'xs:string',
+                 ShipToStreet1          => 'xs:string',
+                 ShipToStreet2          => 'xs:string',
+                 ShipToCityName         => 'xs:string',
+                 ShipToStateOrProvince  => 'xs:string',
+                 ShipToCountry          => 'xs:string',
+                 ShipToPostalCode       => 'xs:string',
                  # Misc
                  CVV2              => 'xs:string',
                  IPAddress         => 'xs:string',
@@ -61,6 +69,15 @@ sub DoDirectPaymentRequest {
                       SOAP::Data->name(StateOrProvince => $args{StateOrProvince} )->type($types{StateOrProvince}),
                       SOAP::Data->name(Country => $args{Country} )->type($types{Country}),
                       SOAP::Data->name(PostalCode => $args{PostalCode} )->type($types{PostalCode}),
+                    );
+
+    my @shipaddr = (  SOAP::Data->name(Name => $args{ShipToName})->type($types{ShipToName}),
+                      SOAP::Data->name(Street1 => $args{ShipToStreet1} )->type($types{ShipToStreet1}),
+                      SOAP::Data->name(Street2 => $args{ShipToStreet2} )->type($types{ShipToStreet2}),
+                      SOAP::Data->name(CityName => $args{ShipToCityName} )->type($types{ShipToCityName}),
+                      SOAP::Data->name(StateOrProvince => $args{ShipToStateOrProvince} )->type($types{ShipToStateOrProvince}),
+                      SOAP::Data->name(Country => $args{ShipToCountry} )->type($types{ShipToCountry}),
+                      SOAP::Data->name(PostalCode => $args{ShipToPostalCode} )->type($types{ShipToPostalCode}),
                     );
 
     my @ccard = ( SOAP::Data->name(CreditCardType => $args{CreditCardType})->type($types{CreditCardType}),
@@ -90,6 +107,7 @@ sub DoDirectPaymentRequest {
                       ->attr({currencyID => $args{currencyID}})->type($types{currencyID}),
                       SOAP::Data->name(ShippingTotal => $args{ShippingTotal})
                       ->attr({currencyID => $args{currencyID}})->type($types{currencyID}),
+                      SOAP::Data->name(ShipToAddress => \SOAP::Data->value( @shipaddr)),
                       SOAP::Data->name(ButtonSource => $args{ButtonSource})->type($types{ButtonSource})
                     );
 
@@ -167,6 +185,13 @@ my %response = $pp->DoDirectPaymentRequest (
                       PostalCode         => '90210',
                       Country            => 'US',
                       Payer              => 'Joe@Example.org',
+                      ShipToName         => 'Jane Doe',
+                      ShipToStreet1      => '1234 S. Pleasant St.',
+                      ShipToStreet2      => 'Suite #992',
+                      ShipToCityName     => 'Vacation Town',
+                      ShipToStateOrProvince => 'FL',
+                      ShipToCountry      => 'US',
+                      ShipToPostalCode   => '12345',
                       CurrencyID         => 'USD',
                       IPAddress          => '10.0.0.1',
                       MerchantSessionID  => '10113301',
@@ -205,6 +230,13 @@ parameters include:
         PostalCode
         Country
         Payer
+        ShipToName
+        ShipToStreet1
+        ShipToStreet2
+        ShipToCityName
+        ShipToStateOrProvince
+        ShipToCountry
+        ShipToPostalCode
         CurrencyID              (USD is default)
         IPAddress
         MerchantSessionID

@@ -10,7 +10,7 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.11';
-our $CVS_VERSION = '$Id: CaptureRequest.pm,v 1.1 2006/10/06 17:49:51 scott Exp $';
+our $CVS_VERSION = '$Id: CaptureRequest.pm,v 1.2 2007/10/16 19:09:26 scott Exp $';
 our @EXPORT_OK = qw(DoCaptureRequest);
 
 sub DoCaptureRequest {
@@ -59,7 +59,7 @@ sub DoCaptureRequest {
         $self->getErrors($som, $path, \%response);
         return %response;
     }
-   $path .= '/PaymentInfo';
+    $path .= '/DoCaptureResponseDetails/PaymentInfo';
     $self->getFields($som, $path, \%response,
                      { 
                      TransactionID   => 'TransactionID',

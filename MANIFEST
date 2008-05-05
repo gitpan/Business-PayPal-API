@@ -11,6 +11,7 @@ lib/Business/PayPal/API/ExpressCheckout.pm
 lib/Business/PayPal/API/GetTransactionDetails.pm
 lib/Business/PayPal/API/MassPay.pm
 lib/Business/PayPal/API/ReauthorizationRequest.pm
+lib/Business/PayPal/API/RecurringPayments.pm
 lib/Business/PayPal/API/RefundTransaction.pm
 lib/Business/PayPal/API/TransactionSearch.pm
 lib/Business/PayPal/API/VoidRequest.pm
@@ -21,6 +22,7 @@ t/ExpressCheckout.t
 t/ExpressOrder.t
 t/GetTransactionDetails.t
 t/MassPay.t
+t/RecurringPayments.t
 t/RefundTransaction.t
 t/TransactionSearch.t
 auth.sample.3token

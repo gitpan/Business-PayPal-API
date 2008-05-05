@@ -22,7 +22,7 @@ sub do_args {
     open FILE, "<", $ENV{WPP_TEST}
       or die "Could not open $ENV{WPP_TEST}: $!\n";
 
-    my @variables = qw( Username Password Signature Subject
+    my @variables = qw( Username Password Signature Subject timeout
 	                CertFile KeyFile PKCS12File PKCS12Password
 		        BuyerEmail
 		      );

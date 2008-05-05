@@ -1,5 +1,24 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.61
+----------------------------
+revision 1.23
+date: 2008/05/05 15:10:40;  author: scott;  state: Exp;  lines: +37 -5
+- timeout setting available
+- additional troubleshooting documentation (auth error handling, URL munging)
+----------------------------
+revision 1.4 [DirectPayments.pm]
+date: 2008/05/05 15:11:14;  author: scott;  state: Exp;  lines: +34 -2
+- add shipto parameters
+----------------------------
+revision 1.12 [ExpressCheckout.pm]
+date: 2008/05/05 15:11:51;  author: scott;  state: Exp;  lines: +11 -3
+- MaxAmount parameter take currencyID attribute (Sandbox)
+----------------------------
+revision 1.1 [RecurringPayments.pm]
+date: 2008/05/05 15:15:04;  author: scott;  state: Exp;
+- add base for RecurringPayments (not working yet)
+
 Release 0.51
 ----------------------------
 revision 1.22
