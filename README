@@ -1,4 +1,4 @@
-Business-PayPal-API version 0.61
+Business-PayPal-API version 0.62
 ================================
 
 INSTALLATION
@@ -46,6 +46,7 @@ DEPENDENCIES
 This module requires these other modules and libraries:
 
   SOAP::Lite 0.67 or later.
+  Crypt::SSLeay required for certificate auth
 
 COPYRIGHT AND LICENCE
 

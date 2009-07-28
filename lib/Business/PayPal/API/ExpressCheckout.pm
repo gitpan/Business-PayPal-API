@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.13';
-our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.12 2008/05/05 15:11:51 scott Exp $';
+our $VERSION = '0.14';
+our $CVS_VERSION = '$Id: ExpressCheckout.pm,v 1.13 2009/07/28 18:00:59 scott Exp $';
 our @EXPORT_OK = qw( SetExpressCheckout GetExpressCheckoutDetails DoExpressCheckoutPayment );
 
 ## if you specify an InvoiceID, PayPal seems to remember it and not
@@ -40,6 +40,12 @@ sub SetExpressCheckout {
 		  PaymentAction             => '',
 		  BuyerEmail                => 'ebl:EmailAddressType' );
 
+    ## billing agreement details type
+    my %badtypes = ( BillingType                 => '', #'ns:BillingCodeType',
+                     BillingAgreementDescription => 'xs:string',
+                     PaymentType                 => '', #'ns:MerchantPullPaymentCodeType',
+                     BillingAgreementCustom      => 'xs:string', );
+
     ## set some defaults
     $args{PaymentAction} ||= 'Sale';
     $args{currencyID}    ||= 'USD';
@@ -65,6 +71,14 @@ sub SetExpressCheckout {
             push @secrd, SOAP::Data->name( $field => $args{$field} )->type( $types{$field} );
         }
     }
+
+    my @btypes = ();
+    for my $field ( keys %badtypes ) {
+        next unless $args{$field};
+        push @btypes, SOAP::Data->name( $field => $args{$field} )->type( $badtypes{$field} );
+    }
+    push @secrd, SOAP::Data->name( BillingAgreementDetails => \SOAP::Data->value(@btypes) )
+      if $args{'BillingType'};
 
     my $request = SOAP::Data
       ->name( SetExpressCheckoutRequest => \SOAP::Data->value
@@ -289,6 +303,7 @@ sub DoExpressCheckoutPayment {
                       "$path/DoExpressCheckoutPaymentResponseDetails",
                       \%response,
                       { Token               => 'Token',
+			BillingAgreementID  => 'BillingAgreementID',
                         TransactionID       => 'PaymentInfo/TransactionID',
                         TransactionType     => 'PaymentInfo/TransactionType',
                         PaymentType         => 'PaymentInfo/PaymentType',
@@ -368,6 +383,10 @@ parameters include:
   'cpp-payflow-color'
   PaymentAction
   BuyerEmail
+  BillingType
+  BillingAgreementDescription
+  PaymentType
+  BillingAgreementCustom
 
 as described in the PayPal "Web Services API Reference" document. The
 default currency setting is 'USD' if not otherwise specified.
@@ -490,6 +509,8 @@ Returns a hash with the following keys:
   ExchangeRate
   PaymentStatus
   PendingReason
+  BillingAgreementID (if BillingType 'MerchantInitiatedBilling'
+                      was specified during SetExpressCheckout)
 
 Required fields:
 

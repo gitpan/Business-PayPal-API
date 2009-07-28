@@ -7,8 +7,8 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.61';
-our $CVS_VERSION = '$Id: API.pm,v 1.23 2008/05/05 15:10:40 scott Exp $';
+our $VERSION = '0.62';
+our $CVS_VERSION = '$Id: API.pm,v 1.24 2009/07/28 18:00:58 scott Exp $';
 our $Debug = 0;
 
 ## NOTE: This package exists only until I can figure out how to use
@@ -199,9 +199,34 @@ sub getFields {
 
     return unless $som;
 
+    ## kudos to Erik Aronesty via email, Drew Simpson via rt.cpan.org (#28596)
+
+    ## Erik wrote:
+    ## <snip>
+    ## If you want me to write the code for the "flagged" version, i
+    ## can .. i think the '/@' flag is a pretty safe, and obvious flag.
+    ##
+    ## the advantage of the flagged version would be that the caller
+    ## doesn't have to check the returned value ... in the case of a
+    ## field where multiple values are expected.
+    ## </snip>
+    ##
+    ## I agree with this on principle and would prefer it, but I voted
+    ## against a special flag, now forcing the caller to check the
+    ## return value, but only for the sake of keeping everything
+    ## consistent with the rest of the API. If Danny Hembree wants to
+    ## go through and implement Erik's suggestion, I'd be in favor of
+    ## it.
+
     for my $field ( keys %$fields ) {
-        if( defined( my $value = $som->valueof("$path/$fields->{$field}") ) ) {
-            $response->{$field} = $value;
+        my @vals = grep { defined } $som->valueof("$path/$fields->{$field}");
+        next unless @vals;
+
+        if( scalar(@vals) == 1 ) {
+            $response->{$field} = $vals[0];
+        }
+        else {
+            $response->{$field} = \@vals;
         }
     }
 }
@@ -735,6 +760,21 @@ documentation inconsistencies.
 =item * Michael Hendricks <michael at ndrix daught org>
 
 for a patch that adds ShippingTotal to the DirectPayments module.
+
+=item * Erik Aronesty, Drew Simpson via rt.cpan.org (#28596)
+
+for a patch to fix getFields() when multiple items are returned
+
+=item * Sebastian Böhm via email, SDC via rt.cpan.org (#38915)
+
+for a heads-up that the PayPal documentation for MassPay API was wrong
+regarding the I<UniqueId> parameter.
+
+=item * Jonathon Wright via email
+
+for patches for B<ExpressCheckout> and B<RecurringPayments> that
+implement I<BillingAgreement> and I<DoReferenceTransaction> API
+calls.
 
 =back
 

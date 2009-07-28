@@ -8,8 +8,8 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.02';
-our $CVS_VERSION = '$Id: MassPay.pm,v 1.2 2007/08/01 00:14:38 scott Exp $';
+our $VERSION = '0.03';
+our $CVS_VERSION = '$Id: MassPay.pm,v 1.3 2009/07/28 18:00:59 scott Exp $';
 our @EXPORT_OK = qw( MassPay );
 
 sub MassPay {
@@ -34,7 +34,7 @@ sub MassPay {
     my %mpi_type = ( ReceiverEmail => 'ebl:EmailAddressType',
                      ReceiverID    => 'xs:string',
                      Amount        => 'ebl:BasicAmountType',
-                     UniqueID      => 'xs:string',
+                     UniqueId      => 'xs:string',
                      Note          => 'xs:string', );
 
     my @recipients = @{ $args{MassPayItems} };
@@ -139,7 +139,7 @@ containing the following fields:
 
   ReceiverEmail
   Amount
-  UniqueID
+  UniqueId
   Note
 
 as described in the PayPal "Web Services API Reference" document.
@@ -152,7 +152,7 @@ Example:
   my %resp = $pp->MassPay( EmailSubject => "This is the subject",
                            MassPayItems => [ { ReceiverEmail => 'joe@test.tld',
                                                Amount => '24.00',
-                                               UniqueID => "123456",
+                                               UniqueId => "123456",
                                                Note => "Enjoy the money. Don't spend it all in one place." } ] );
 
   unless( $resp{Ack} eq 'Success' ) {

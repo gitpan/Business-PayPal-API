@@ -10,7 +10,7 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.03';
-our $CVS_VERSION = '$Id: DirectPayments.pm,v 1.4 2008/05/05 15:11:14 scott Exp $';
+our $CVS_VERSION = '$Id: DirectPayments.pm,v 1.5 2009/07/28 18:00:59 scott Exp $';
 our @EXPORT_OK = qw(DoDirectPaymentRequest);
 
 sub DoDirectPaymentRequest {
@@ -23,6 +23,7 @@ sub DoDirectPaymentRequest {
                  ItemTotal         => 'xsd:string',
                  ShippingTotal     => 'xsd:string',
                  TaxTotal          => 'xsd:string',
+                 InvoiceID         => 'xsd:string',
                  ButtonSource      => 'xsd:string',
                  # Credit Card
                  CreditCardType    => '',
@@ -108,6 +109,7 @@ sub DoDirectPaymentRequest {
                       SOAP::Data->name(ShippingTotal => $args{ShippingTotal})
                       ->attr({currencyID => $args{currencyID}})->type($types{currencyID}),
                       SOAP::Data->name(ShipToAddress => \SOAP::Data->value( @shipaddr)),
+                      SOAP::Data->name(InvoiceID    => $args{InvoiceID})->type($types{InvoiceID}),
                       SOAP::Data->name(ButtonSource => $args{ButtonSource})->type($types{ButtonSource})
                     );
 
@@ -152,50 +154,51 @@ Business::PayPal::API::DirectPayments - PayPal DirectPayments API
 
 =head1 SYNOPSIS
 
-use Business::PayPal::API qw(DirectPayments);
-
-## see Business::PayPal::API documentation for parameters
-
-my $pp = new Business::PayPal::API(
-                       Username => 'name_api1.example.org',
-                       Password => 'somepass',
-                       CertFile => '/path/to/tester1.cert_key_pem.txt',
-                       KeyFile  => '/path/to/tester1.cert_key_pem.txt',
-                       sandbox  => 1,
-                       );
-
-my %response = $pp->DoDirectPaymentRequest (
-                      PaymentAction      => 'Sale',
-                      OrderTotal         => 13.59,
-                      TaxTotal           => 0.0,
-                      ShippingTotal      => 0.0,
-                      ItemTotal          => 0.0,
-                      HandlingTotal      => 0.0,
-                      CreditCardType     => 'Visa',
-                      CreditCardNumber   => '4561435600988217',
-                      ExpMonth           => '01',
-                      ExpYear            => '2007',
-                      CVV2               => '123',
-                      FirstName          => 'James',
-                      LastName           => 'PuffDaddy',
-                      Street1            => '1st Street LaCausa',
-                      Street2            => '',
-                      CityName           => 'La',
-                      StateOrProvince    => 'Ca',
-                      PostalCode         => '90210',
-                      Country            => 'US',
-                      Payer              => 'Joe@Example.org',
-                      ShipToName         => 'Jane Doe',
-                      ShipToStreet1      => '1234 S. Pleasant St.',
-                      ShipToStreet2      => 'Suite #992',
-                      ShipToCityName     => 'Vacation Town',
-                      ShipToStateOrProvince => 'FL',
-                      ShipToCountry      => 'US',
-                      ShipToPostalCode   => '12345',
-                      CurrencyID         => 'USD',
-                      IPAddress          => '10.0.0.1',
-                      MerchantSessionID  => '10113301',
-                      );
+    use Business::PayPal::API qw(DirectPayments);
+    
+    ## see Business::PayPal::API documentation for parameters
+    
+    my $pp = new Business::PayPal::API(
+                        Username => 'name_api1.example.org',
+                        Password => 'somepass',
+                        CertFile => '/path/to/tester1.cert_key_pem.txt',
+                        KeyFile  => '/path/to/tester1.cert_key_pem.txt',
+                        sandbox  => 1,
+                        );
+    
+    my %response = $pp->DoDirectPaymentRequest (
+                        PaymentAction      => 'Sale',
+                        OrderTotal         => 13.59,
+                        TaxTotal           => 0.0,
+                        ShippingTotal      => 0.0,
+                        ItemTotal          => 0.0,
+                        HandlingTotal      => 0.0,
+                        InvoiceID          => 'your-tracking-number',
+                        CreditCardType     => 'Visa',
+                        CreditCardNumber   => '4561435600988217',
+                        ExpMonth           => '01',
+                        ExpYear            => '2007',
+                        CVV2               => '123',
+                        FirstName          => 'James',
+                        LastName           => 'PuffDaddy',
+                        Street1            => '1st Street LaCausa',
+                        Street2            => '',
+                        CityName           => 'La',
+                        StateOrProvince    => 'Ca',
+                        PostalCode         => '90210',
+                        Country            => 'US',
+                        Payer              => 'Joe@Example.org',
+                        ShipToName         => 'Jane Doe',
+                        ShipToStreet1      => '1234 S. Pleasant St.',
+                        ShipToStreet2      => 'Suite #992',
+                        ShipToCityName     => 'Vacation Town',
+                        ShipToStateOrProvince => 'FL',
+                        ShipToCountry      => 'US',
+                        ShipToPostalCode   => '12345',
+                        CurrencyID         => 'USD',
+                        IPAddress          => '10.0.0.1',
+                        MerchantSessionID  => '10113301',
+                        );
 
 =head1 DESCRIPTION
 
@@ -216,6 +219,7 @@ parameters include:
         ShippingTotal
         ItemTotal
         HandlingTotal
+        InvoiceID
         CreditCardType
         CreditCardNumber
         ExpMonth                ( two digits, leading zero )

@@ -1,5 +1,22 @@
 Revision history for Perl extension Business::PayPal::API.
 
+Release 0.62 - last scottw release
+----------------------------
+revision 1.24
+date: 2009/07/28 18:00:58;  author: scott;  state: Exp;  lines: +44 -4
+- getFields() returns an array ref if multiple values are returned
+  from PayPal, otherwise it behaves as it always did, returning a
+  non-ref scalar.
+- BillingAgreement information returned in ExpressCheckout
+- Fix GetTransactionDetails 'PII_SalesTax' parameter
+- Fix GetTransactionDetails to return multiple PaymentItems
+- Fix MassPay to use the correct UniqueID parameter
+- Add DoReferenceTransaction to RecurringPayments API
+- Lots of credit given to great folks with patches in API docs
+
+Thanks everyone! I'm handing this module off to Danny Hembree for
+maintenance now.
+
 Release 0.61
 ----------------------------
 revision 1.23

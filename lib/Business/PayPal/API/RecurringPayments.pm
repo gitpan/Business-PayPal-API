@@ -8,11 +8,12 @@ use SOAP::Lite 0.67;
 use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
-our $VERSION = '0.01';
-our $CVS_VERSION = '$Id: RecurringPayments.pm,v 1.1 2008/05/05 15:15:04 scott Exp $';
+our $VERSION = '0.02';
+our $CVS_VERSION = '$Id: RecurringPayments.pm,v 1.2 2009/07/28 18:00:59 scott Exp $';
 our @EXPORT_OK = qw( SetCustomerBillingAgreement
                      GetBillingAgreementCustomerDetails
-                     CreateRecurringPaymentsProfile );
+                     CreateRecurringPaymentsProfile
+		     DoReferenceTransaction);
 
 our $API_VERSION = '50.0';
 
@@ -307,6 +308,169 @@ sub CreateRecurringPaymentsProfile {
     return %response;
 }
 
+sub DoReferenceTransaction {
+    my $self = shift;
+    my %args = @_;
+
+    my %types = ( ReferenceID               => 'xs:string',
+		  PaymentAction             => '',                 ## NOTA BENE!
+		  currencyID                => '',
+		  );
+
+    ## PaymentDetails
+    my %pd_types = ( OrderTotal             => 'ebl:BasicAmountType',
+		     OrderDescription       => 'xs:string',
+		     ItemTotal              => 'ebl:BasicAmountType',
+		     ShippingTotal          => 'ebl:BasicAmountType',
+		     HandlingTotal          => 'ebl:BasicAmountType',
+		     TaxTotal               => 'ebl:BasicAmountType',
+		     Custom                 => 'xs:string',
+		     InvoiceID              => 'xs:string',
+		     ButtonSource           => 'xs:string',
+		     NotifyURL              => 'xs:string',
+		     );
+
+    ## ShipToAddress
+    my %st_types = ( ST_Name                   => 'xs:string',
+		     ST_Street1                => 'xs:string',
+		     ST_Street2                => 'xs:string',
+		     ST_CityName               => 'xs:string',
+		     ST_StateOrProvince        => 'xs:string',
+		     ST_Country                => 'xs:string',
+		     ST_PostalCode             => 'xs:string',
+		     ST_Phone                  => 'xs:string',
+		     );
+
+    ##PaymentDetailsItem
+    my %pdi_types = ( PDI_Name                 => 'xs:string',
+		      PDI_Description          => 'xs:string',
+		      PDI_Amount               => 'ebl:BasicAmountType',
+		      PDI_Number               => 'xs:string',
+		      PDI_Quantity             => 'xs:string',
+		      PDI_Tax                  => 'ebl:BasicAmountType',
+		      );
+
+    $args{PaymentAction} ||= 'Sale';
+    $args{currencyID}    ||= 'USD';
+
+    my @payment_details = ( );
+
+    ## push OrderTotal here and delete it (i.e., and all others that have special attrs)
+    push @payment_details, SOAP::Data->name( OrderTotal => $args{OrderTotal} )
+	->type( $pd_types{OrderTotal} )
+	->attr( { currencyID => $args{currencyID},
+		  xmlns      => $self->C_xmlns_ebay } );
+
+    ## don't process it again
+    delete $pd_types{OrderTotal};
+
+    for my $field ( keys %pd_types ) {
+	if( $args{$field} ) {
+	  push @payment_details, 
+	    SOAP::Data->name( $field => $args{$field} )
+		->type( $pd_types{$field} );
+	}
+    }
+
+    ##
+    ## ShipToAddress
+    ##
+    my @ship_types = ();
+    for my $field ( keys %st_types ) {
+	if( $args{$field} ) {
+	  (my $name = $field) =~ s/^ST_//;
+	  push @ship_types,
+	    SOAP::Data->name( $name => $args{$field} )
+		->type( $st_types{$field} );
+	}
+    }
+
+    if( scalar @ship_types ) {
+	push @payment_details,
+	SOAP::Data->name( ShipToAddress => \SOAP::Data->value
+			  ( @ship_types )->type('ebl:AddressType')
+			  ->attr( {xmlns => $self->C_xmlns_ebay} ),
+			  );
+    }
+
+    ##
+    ## PaymentDetailsItem
+    ##
+    my @payment_details_item = ();
+    for my $field ( keys %pdi_types ) {
+	if( $args{$field} ) {
+	  (my $name = $field) =~ s/^PDI_//;
+	  push @payment_details_item,
+	    SOAP::Data->name( $name => $args{$field} )
+		->type( $pdi_types{$field} );
+	}
+    }
+
+    if( scalar @payment_details_item ) {
+	push @payment_details,
+	SOAP::Data->name( PaymentDetailsItem => \SOAP::Data->value
+			  ( @payment_details_item )->type('ebl:PaymentDetailsItemType')
+			  ->attr( {xmlns => $self->C_xmlns_ebay} ),
+			  );
+    }
+
+    ##
+    ## ReferenceTransactionPaymentDetails
+    ##
+    my @reference_details = (
+		 SOAP::Data->name( ReferenceID => $args{ReferenceID} )
+		 ->type($types{ReferenceID})->attr( {xmlns => $self->C_xmlns_ebay} ),
+		 SOAP::Data->name( PaymentAction => $args{PaymentAction} )
+		 ->type($types{PaymentAction})->attr( {xmlns => $self->C_xmlns_ebay} ),
+		 SOAP::Data->name( PaymentDetails => \SOAP::Data->value
+				   ( @payment_details )->type('ebl:PaymentDetailsType')
+				   ->attr( {xmlns => $self->C_xmlns_ebay} ),
+				   ), );
+
+    ##
+    ## the main request object
+    ##
+    my $request = SOAP::Data
+      ->name( DoReferenceTransactionRequest => \SOAP::Data->value
+	      ( $self->version_req,
+		SOAP::Data->name( DoReferenceTransactionRequestDetails => \SOAP::Data->value
+				  ( @reference_details )->type( 'ns:DoReferenceTransactionRequestDetailsType' )
+				)->attr( {xmlns => $self->C_xmlns_ebay} ),
+	      )
+	    );
+
+    my $som = $self->doCall( DoReferenceTransactionReq => $request )
+      or return;
+
+    my $path = '/Envelope/Body/DoReferenceTransactionResponse';
+
+    my %response = ();
+    unless( $self->getBasic($som, $path, \%response) ) {
+        $self->getErrors($som, $path, \%response);
+        return %response;
+    }
+
+    $self->getFields( $som,
+                      "$path/DoReferenceTransactionResponseDetails",
+                      \%response,
+                      { BillingAgreementID  => 'BillingAgreementID',
+                        TransactionID       => 'PaymentInfo/TransactionID',
+                        TransactionType     => 'PaymentInfo/TransactionType',
+                        PaymentType         => 'PaymentInfo/PaymentType',
+                        PaymentDate         => 'PaymentInfo/PaymentDate',
+                        GrossAmount         => 'PaymentInfo/GrossAmount',
+                        FeeAmount           => 'PaymentInfo/FeeAmount',
+                        SettleAmount        => 'PaymentInfo/SettleAmount',
+                        TaxAmount           => 'PaymentInfo/TaxAmount',
+                        ExchangeRate        => 'PaymentInfo/ExchangeRate',
+                        PaymentStatus       => 'PaymentInfo/PaymentStatus',
+                        PendingReason       => 'PaymentInfo/PendingReason',
+			ReasonCode          => 'PaymentInfor/ReasonCode',
+                      } );
+
+    return %response;
+}
+
 1;
 __END__
 
@@ -322,10 +486,79 @@ my $pp = new Business::PayPal::API::RecurringPayments( ... );
 
 my %resp = $pp->FIXME
 
+  ## Ask PayPal to charge a new transaction from the ReferenceID
+  ## This method is used both for Recurring Transactions as well 
+  ## as for Express Checkout's MerchantInitiatedBilling, where 
+  ## ReferenceID is the BillingAgreementID returned from 
+  ## ExpressCheckout->DoExpressCheckoutPayment
+
+  my %payinfo = $pp->DoReferenceTransaction( ReferenceID => $details{ReferenceID},
+                                               PaymentAction => 'Sale',
+                                               OrderTotal => '55.43' );
+
+
 =head1 DESCRIPTION
 
 THIS MODULE IS NOT COMPLETE YET. PLEASE DO NOT REPORT ANY BUGS RELATED
 TO IT.
+
+=head2 DoReferenceTransaction
+
+Implements PayPal's WPP B<DoReferenceTransaction> API call. Supported
+parameters include:
+
+  ReferenceID (aka BillingAgreementID)
+  PaymentAction (defaults to 'Sale' if not supplied)
+  currencyID (defaults to 'USD' if not supplied)
+
+  OrderTotal
+  OrderDescription
+  ItemTotal
+  ShippingTotal
+  HandlingTotal
+  TaxTotal
+  Custom
+  InvoiceID
+  ButtonSource
+  NotifyURL
+
+  ST_Name
+  ST_Street1
+  ST_Street2
+  ST_CityName
+  ST_StateOrProvince
+  ST_Country
+  ST_PostalCode
+  ST_Phone
+
+  PDI_Name
+  PDI_Description
+  PDI_Amount
+  PDI_Number
+  PDI_Quantity
+  PDI_Tax
+
+as described in the PayPal "Web Services API Reference" document.
+
+Returns a hash with the following keys:
+
+  BillingAgreementID
+  TransactionID
+  TransactionType
+  PaymentType
+  PaymentDate
+  GrossAmount
+  FeeAmount
+  SettleAmount
+  TaxAmount
+  ExchangeRate
+  PaymentStatus
+  PendingReason
+  ReasonCode
+
+Required fields:
+
+  ReferenceID, OrderTotal
 
 =head1 SEE ALSO
 

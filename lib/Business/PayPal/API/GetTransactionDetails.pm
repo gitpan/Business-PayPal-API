@@ -9,7 +9,7 @@ use Business::PayPal::API ();
 
 our @ISA = qw(Business::PayPal::API);
 our $VERSION = '0.12';
-our $CVS_VERSION = '$Id: GetTransactionDetails.pm,v 1.4 2006/03/28 18:05:03 scott Exp $';
+our $CVS_VERSION = '$Id: GetTransactionDetails.pm,v 1.5 2009/07/28 18:00:59 scott Exp $';
 our @EXPORT_OK = qw(GetTransactionDetails);  ## fake exporter
 
 sub GetTransactionDetails {
@@ -88,7 +88,7 @@ sub GetTransactionDetails {
                        Memo                => '/PaymentItemInfo/Memo',
                        SalesTax            => '/PaymentItemInfo/SalesTax',
 
-                       PII_SaleTax         => '/PaymentItemInfo/PaymentItem/SaleTax',
+                       PII_SalesTax        => '/PaymentItemInfo/PaymentItem/SalesTax',
                        PII_Name            => '/PaymentItemInfo/PaymentItem/Name',
                        PII_Number          => '/PaymentItemInfo/PaymentItem/Number',
                        PII_Quantity        => '/PaymentItemInfo/PaymentItem/Quantity',
@@ -112,6 +112,20 @@ sub GetTransactionDetails {
                        PII_multiItem        => '/PaymentItemInfo/Auction/multiItem',
                      }
                     );
+
+    ## multiple payment items
+    my $paymentitems = $self->getFieldsList( $som, $path . '/PaymentItemInfo/PaymentItem',
+                                             { SalesTax => 'SalesTax',
+                                               Name     => 'Name',
+                                               Number   => 'Number',
+                                               Quantity => 'Quantity',
+                                               Amount   => 'Amount',
+                                               Options  => 'Options',
+                                             } );
+
+    if( scalar(@$paymentitems) > 1 ) {
+        $response{PaymentItems} = $paymentitems;
+    }
 
     return %response;
 }
@@ -229,10 +243,28 @@ Returns a hash containing the transaction details, including these fields:
 As described in the API document. Note: some fields have prefixes to
 remove ambiguity for like-named fields (e.g., "PII_").
 
+If there are multiple PaymentItems, then an additional field
+'PaymentItems' will be available with an arrayref of PaymentItem
+records:
+
+  PaymentItems => [ { SalesTax => ..., 
+                      Name     => '...',
+                      Number   => '...',
+                      Quantity => '...',
+                      Amount   => '...',
+                    },
+                    { SalesTax => ..., etc. 
+                    } ]
+
 Example:
 
   my %resp = $pp->GetTransactionDetails( TransactionID => $trans_id );
-  print STDERR "Payer: $resp{Payer}\n";
+  print "Payer: $resp{Payer}\n";
+
+  for my $item ( @{ $resp{PaymentItems} } ) {
+      print "Name: " . $item->{Name} . "\n";
+      print "Amt: " . $item->{Amount} . "\n";
+  }
 
 =head2 ERROR HANDLING
 
