@@ -1,11 +1,22 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Business-PayPal-API
-version:      0.62
-version_from: lib/Business/PayPal/API.pm
-installdirs:  site
+---
+abstract: 'PayPal API'
+author:
+  - 'Scott Wiersdorf <scott@perlcode.org>'
+build_requires:
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.62, CPAN::Meta::Converter version 2.120630'
+license: unknown
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Business-PayPal-API
+no_index:
+  directory:
+    - t
+    - inc
 requires:
-    SOAP::Lite:                    0.67
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+  SOAP::Lite: 0.67
+version: 0.70

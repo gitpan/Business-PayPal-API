@@ -28,3 +28,4 @@ t/TransactionSearch.t
 auth.sample.3token
 auth.sample.cert
 META.yml
+META.json                                Module JSON meta-data (added by MakeMaker)

@@ -7,7 +7,7 @@ use warnings;
 use SOAP::Lite 0.67; # +trace => 'all';
 use Carp qw(carp);
 
-our $VERSION = '0.69';
+our $VERSION = '0.70';
 our $CVS_VERSION = '$Id: API.pm,v 1.24 2009/07/28 18:00:58 scott Exp $';
 our $Debug = 0;
 
@@ -243,7 +243,7 @@ sub getBasic {
 
     return unless $som;
 
-    for my $field qw( Ack Timestamp CorrelationID Version Build ) {
+    for my $field ( qw( Ack Timestamp CorrelationID Version Build ) ) {
         $details->{$field} = $som->valueof("$path/$field") || '';
     }
 
